@@ -1,0 +1,9 @@
+<launch>
+    <!--run zed launch file-->
+    <include file="$(find zed_wrapper)/launch/zed.launch"/>
+    <!--run create 2 launch file-->
+    <include file="$(find ca_driver)/launch/create_2.launch"/>
+    <!--run recorder-->
+    <node pkg="robot" type="recorder.py" name="recorder" output="screen" cwd="node"/>
+    <node pkg="robot" type="commander.py" name="commander" output="screen"/>
+</launch>

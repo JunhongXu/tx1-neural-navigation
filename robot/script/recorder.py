@@ -19,12 +19,13 @@ import time
 
 class Recorder(object):
     def __init__(self):
+        rospy.loginfo('[*]Start recorder.')
         self.record = False
         self.bridge = CvBridge()
         self.twist = None
         # create folders
-        self.RGB_PATH = 'RGB_DATA/'
-        self.DEPTH_PATH = 'DEPTH_DATA/'
+        self.RGB_PATH = '../RGB_DATA/'
+        self.DEPTH_PATH = '../DEPTH_DATA/'
         self.create_folders()
         self.twist_lock = Lock()
         self.start_btn_curr = False
