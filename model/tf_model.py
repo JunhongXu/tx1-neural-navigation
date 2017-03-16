@@ -39,12 +39,10 @@ class NeuralCommander(object):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')
 
     def restore(self, sess):
-        ckpt = tf.train.get_checkpoint_state('../checkpoint/')
-        print(ckpt, ckpt.model_checkpoint_path)
-        if ckpt and ckpt.model_checkpoint_path:
-            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            self.saver.restore(sess, os.path.join('../checkpoint/', ckpt_name))
-            print("[*]Restore the model %s successfully!" % ckpt_name)
+        saver = tf.train.import_meta_graph('../checkpoint/cnn-model.meta')
+        saver.restore(sess, tf.train.latest_checkpoint('../checkpoint'))
+        for v in self.params:
+            print(v.name)
         else:
             print("[!]Did not restore the model ")
 
@@ -89,8 +87,8 @@ class NeuralCommander(object):
             fc1 = layers.fully_connected(flattened, 256, scope=scope)
             self.layers.append(fc1)
 
-        with tf.variable_scope('dropout') as scope:
-            dropout = layers.dropout(fc1, is_training=self.is_training, scope=scope)
+        with tf.variable_scope('dropout'):
+            dropout = layers.dropout(fc1, is_training=self.is_training)
             self.layers.append(dropout)
 
         with tf.variable_scope('fc2') as scope:
