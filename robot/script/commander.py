@@ -21,9 +21,7 @@ class Commander(object):
     def __init__(self):
         rospy.loginfo('[*]Start commander.')
         # joystick
-        self.joycmd = TwistStamped()
-        # neural net
-        self.nncmd = TwistStamped()
+        self.joycmd = Twist()
         # mode
         self.mode = 'human'
         # subscriber
@@ -45,8 +43,8 @@ class Commander(object):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""
         vel = cmd.axes[1]/2.
         angular = cmd.axes[2] * 4.25
-        self.joycmd.twist.angular.z = angular
-        self.joycmd.twist.linear.x = vel
+        self.joycmd.angular.z = angular
+        self.joycmd.linear.x = vel
 
     def neural_cmd(self, cmd):
         self.joycmd = cmd
