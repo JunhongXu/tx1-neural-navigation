@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 import tensorflow as tf
 from tensorflow.contrib import layers
-
+import os
 
 class NeuralCommander(object):
     def __init__(self, inpt_size=(128, 128, 3)):
@@ -26,6 +26,27 @@ class NeuralCommander(object):
         # loss
         self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi), axis=1)),
                                    name='loss')
+
+        with tf.name_scope('step'):
+            self.global_setp = tf.Variable(initial_value=0, name='iteration', trainable=False)
+
+        self.saver = tf.train.Saver(var_list=tf.trainable_variables())
+
+    def predict(self, sess, x):
+        return sess.run(self.pi, feed_dict={self.x: x, self.is_training: False})
+
+    def save(self, sess):
+        self.saver.save(sess, save_path='../../checkpoint/cnn-model')
+
+    def restore(self, sess):
+        ckpt = tf.train.get_checkpoint_state('../checkpoint/')
+        print(ckpt, ckpt.model_checkpoint_path)
+        if ckpt and ckpt.model_checkpoint_path:
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(sess, os.path.join('../checkpoint/', ckpt_name))
+            print("[*]Restore the model %s successfully!" % ckpt_name)
+        else:
+            print("[!]Did not restore the model ")
 
     def build(self):
         print('[*]Building...')

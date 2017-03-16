@@ -28,7 +28,7 @@ class Commander(object):
         self.mode = 'human'
         # subscriber
         rospy.Subscriber('/joy', Joy, self.joystick_cmd, queue_size=5)
-        rospy.Subscriber('/neural_command', TwistStamped, self.neural_cmd)
+        rospy.Subscriber('/neural_cmd', Twist, self.neural_cmd)
 
         # publisher
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
@@ -48,18 +48,11 @@ class Commander(object):
         self.joycmd.twist.angular.z = angular
         self.joycmd.twist.linear.x = vel
 
-    def neural_cmd(self):
-        pass
+    def neural_cmd(self, cmd):
+        self.joycmd = cmd
 
     def send_cmd(self):
-        if self.mode == 'human':
-            cmd = self.joycmd.twist
-            # rospy.loginfo('human command: {}, {}'.format(cmd.linear.x, cmd.angular.z))
-        elif self.mode == 'neural':
-            cmd = self.nncmd.twist
-            # rospy.loginfo('neural command: {}, {}'.format(cmd.linear.x, cmd.angular.z))
-        self.move_pub.publish(cmd)
-
+        self.move_pub.publish(self.joycmd)
 
 
 if __name__ == '__main__':

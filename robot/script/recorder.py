@@ -62,7 +62,7 @@ class Recorder(object):
                     v = self.twist.linear.x
                     r = self.twist.angular.z
                     with self.twist_lock:
-                        filename = os.path.join(self.RGB_PATH, '%s-%s-%s.png' % (timestamp, v, r))
+                        filename = os.path.join(self.RGB_PATH, '%s_%s_%s.png' % (timestamp, v, r))
                     image = cv2.resize(image, (256, 256))
                     # save image
                     cv2.imwrite(filename, image)
@@ -90,8 +90,6 @@ class Recorder(object):
             self.twist = twist
 
     def get_status(self, joy_cmd):
-        print(joy_cmd.axes)
-        print(joy_cmd.buttons)
         start = joy_cmd.buttons[3]
         self.start_btn_prev = self.start_btn_curr
         self.start_btn_curr = start == 1
