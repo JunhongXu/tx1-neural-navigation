@@ -1,7 +1,9 @@
 import numpy as np
 import cv2
 import glob
-
+import pickle
+import tensorflow as tf
+from model.tf_model import NeuralCommander
 
 def load_data(val_num=200, read_rgb=True, read_depth=False, display=False):
     """Read all images in RGB and DEPTH"""
@@ -48,3 +50,14 @@ def load_data(val_num=200, read_rgb=True, read_depth=False, display=False):
             depth_img = cv2.resize(depth_img, (128, 128))
             depth_imgs.append(depth_img)
     return np.array(rgb_imgs), np.array(rgb_labels), np.array(depth_imgs), np.array(depth_labels)
+
+
+def convert_to_pkl():
+    params = {}
+    with tf.Session() as sess:
+        model = NeuralCommander()
+        model.restore(sess)
+        for v in model.params:
+            params[v.name] = sess.run(v)
+    with open('../checkpoint/picke_model.pkl', 'w') as f:
+        pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)

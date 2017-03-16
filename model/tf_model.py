@@ -43,8 +43,6 @@ class NeuralCommander(object):
         saver.restore(sess, tf.train.latest_checkpoint('../checkpoint'))
         for v in self.params:
             print(v.name)
-        else:
-            print("[!]Did not restore the model ")
 
     def build(self):
         print('[*]Building...')

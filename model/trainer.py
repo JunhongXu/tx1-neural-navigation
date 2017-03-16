@@ -1,6 +1,6 @@
 import tensorflow as tf
 from model.tf_model import NeuralCommander
-from model.utilities import load_data
+from model.utilities import *
 from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
@@ -28,7 +28,6 @@ def train(sess, model, trainer, num_iter):
             model.save(sess)
             print(loss)
 
-
 if __name__ == '__main__':
     with tf.Session() as sess:
         model = NeuralCommander()
@@ -40,4 +39,6 @@ if __name__ == '__main__':
             sess.run(tf.global_variables_initializer())
 
         train(sess, model, trainer, 100000)
+    convert_to_pkl()
+
 

@@ -3,7 +3,9 @@ from __future__ import absolute_import
 from __future__ import division
 import tensorflow as tf
 from tensorflow.contrib import layers
-import os
+import pickle
+import numpy as np
+
 
 """
 Copied from mode/tf_model.py
@@ -43,11 +45,14 @@ class NeuralCommander(object):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')
 
     def restore(self, sess):
-        saver = tf.train.import_meta_graph('../checkpoint/cnn-model.meta')
-        saver.restore(sess, tf.train.latest_checkpoint('../checkpoint'))
-        for v in self.params:
-            print(v.name)
-            print(sess.run(v))
+        with open('../checkpoint/picke_model.pkl', 'r') as f:
+            params = pickle.load(f)
+            # restore
+            keys = sorted(params.keys())
+            print(keys)
+            for i, param in enumerate(self.params):
+                print(i, param.name, np.shape(params[param.name]))
+                sess.run(param.assign(params[param.name]))
 
     def build(self):
         print('[*]Building...')
