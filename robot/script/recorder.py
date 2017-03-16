@@ -17,6 +17,7 @@ import os
 from threading import Lock
 import time
 
+
 class Recorder(object):
     def __init__(self):
         rospy.loginfo('[*]Start recorder.')
@@ -79,8 +80,6 @@ class Recorder(object):
                     r = self.twist.angular.z
                     with self.twist_lock:
                         filename = os.path.join(self.DEPTH_PATH, '%s-%s-%s.png' % (timestamp, v, r))
-                    # resive the image
-                    image = cv2.resize(image, (256, 256))
                     # save image
                     cv2.imwrite(filename, image)
             except CvBridgeError as error:
@@ -91,6 +90,8 @@ class Recorder(object):
             self.twist = twist
 
     def get_status(self, joy_cmd):
+        print(joy_cmd.axes)
+        print(joy_cmd.buttons)
         start = joy_cmd.buttons[3]
         self.start_btn_prev = self.start_btn_curr
         self.start_btn_curr = start == 1
