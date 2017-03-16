@@ -28,7 +28,7 @@ class NeuralCommander(object):
             print('{}: {}'.format(p.name, p.get_shape()))
 
         # loss
-        self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi), axis=1)),
+        self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi),1)),
                                    name='loss')
 
         with tf.name_scope('step'):
