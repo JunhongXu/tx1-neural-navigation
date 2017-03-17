@@ -53,6 +53,7 @@ def load_data(val_num=200, read_rgb=True, read_depth=False, display=False):
 
 
 def convert_to_pkl():
+    """Save tensorflow model to a pickle file"""
     params = {}
     with tf.Session() as sess:
         model = NeuralCommander()

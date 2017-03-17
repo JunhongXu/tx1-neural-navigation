@@ -8,7 +8,10 @@ import numpy as np
 
 
 """
-Copied from mode/tf_model.py
+Made some minor changes from mode/tf_model.py because of tensorflow r0.11 and 1.0 compatibility.
+This class should be in robot/script/ folder.
+
+This class load a picle file which stores dictionary of parameters {param.name: param}.
 """
 
 class NeuralCommander(object):

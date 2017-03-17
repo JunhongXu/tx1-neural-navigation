@@ -15,7 +15,12 @@ import copy
 
 class PS3(object):
     def __init__(self):
-        self.idx_btn = {}
+        self.idx_btn = {
+
+        }
+        self.btn_idx = {
+
+        }
         # a dictionary of buttons. {btn_name:True/False}
         self.buttons = {
             'left': False,
