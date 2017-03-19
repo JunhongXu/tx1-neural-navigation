@@ -4,6 +4,7 @@ Subscriber:
     1. This node subscribes to the topic /zed/rgb/image_rect_color to save the image using cv2
     2. This node subscribes to the topic /zed/depth/depth_registered to save the depth image using cv2
     3. This node subscribes to the topic /cmd_vel to get filename for each image
+    4. This node subscribes to the topic /zed/odom to save the 3D orientation relative to zed_initial_frame
 """
 from __future__ import print_function
 from __future__ import division
@@ -12,11 +13,11 @@ import cv2
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, Joy
 import os
 from threading import Lock
-import time
-
+from controller import PS3
 
 class Recorder(object):
     def __init__(self):
@@ -25,36 +26,53 @@ class Recorder(object):
         self.bridge = CvBridge()
         self.twist = None
         # create folders
-        self.RGB_PATH = '../RGB_DATA/'
-        self.DEPTH_PATH = '../DEPTH_DATA/'
+        self.SAFETY_RGB_PATH = '../safety/RGB_DATA/'
+        self.SAFETY_DEPTH_PATH = '../safety/DEPTH_DATA/'
+        self.DEPTH_PATH = '../primary/DEPTH_DATA/'
+        self.RGB_PATH = '../primary/RGB_DATA/'
         self.create_folders()
         self.twist_lock = Lock()
-        self.start_btn_curr = False
-        self.start_btn_prev = False
-        self.start_btn_pressed = False
+        self.controller = PS3()
+        self.primary_record = False
+        self.safety_record = False
         # rgb image
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.save_depth)
         # cmd_vel
         rospy.Subscriber('/cmd_vel', Twist, self.get_twist)
+        # odom
+        rospy.Subscriber('/odom', Odometry, self.save_odom)
         # joy
         rospy.Subscriber('/joy', Joy, self.get_status)
         rospy.init_node('recorder')
         # keeps the node alive
         rospy.spin()
 
+
+    # TODO: Get odometry data
+    def save_odom(self, odom):
+        pass
+
     def create_folders(self):
+        if not os.path.exists(self.SAFETY_RGB_PATH):
+            print('[!]Creating safety RGB data folder.')
+            os.makedirs(self.SAFETY_RGB_PATH)
+
+        if not os.path.exists(self.SAFETY_DEPTH_PATH):
+            print('[!]Creating safety DEPTH data folder.')
+            os.makedirs(self.SAFETY_DEPTH_PATH)
+
         if not os.path.exists(self.RGB_PATH):
             print('[!]Creating rgb data folder.')
-            os.mkdir(self.RGB_PATH)
+            os.makedirs(self.RGB_PATH)
 
         if not os.path.exists(self.DEPTH_PATH):
             print('[!]Creating depth data folder.')
-            os.mkdir(self.DEPTH_PATH)
+            os.makedirs(self.DEPTH_PATH)
 
     def save_rgb(self, rgb):
-        if self.record:
+        if self.safety_record or self.primary_record:
             try:
                 image = self.bridge.imgmsg_to_cv2(rgb)
                 if self.twist is not None:
@@ -62,7 +80,8 @@ class Recorder(object):
                     v = self.twist.linear.x
                     r = self.twist.angular.z
                     with self.twist_lock:
-                        filename = os.path.join(self.RGB_PATH, '%s_%s_%s.png' % (timestamp, v, r))
+                        filename = self.SAFETY_RGB_PATH if self.safety_record else self.RGB_PATH
+                        filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
                     image = cv2.resize(image, (256, 256))
                     # save image
                     cv2.imwrite(filename, image)
@@ -70,7 +89,7 @@ class Recorder(object):
                 print(error)
 
     def save_depth(self, depth):
-        if self.record:
+        if self.primary_record or self.safety_record:
             try:
                 image = self.bridge.imgmsg_to_cv2(depth)
 
@@ -79,7 +98,8 @@ class Recorder(object):
                     v = self.twist.linear.x
                     r = self.twist.angular.z
                     with self.twist_lock:
-                        filename = os.path.join(self.DEPTH_PATH, '%s-%s-%s.png' % (timestamp, v, r))
+                        filename = self.SAFETY_DEPTH_PATH if self.safety_record else self.DEPTH_PATH
+                        filename = os.path.join(filename, '%s-%s-%s.png' % (timestamp, v, r))
                     # save image
                     cv2.imwrite(filename, image)
             except CvBridgeError as error:
@@ -90,24 +110,26 @@ class Recorder(object):
             self.twist = twist
 
     def get_status(self, joy_cmd):
-        start = joy_cmd.buttons[3]
-        self.start_btn_prev = self.start_btn_curr
-        self.start_btn_curr = start == 1
-        if self.start_btn_curr != self.start_btn_prev:
-            if self.start_btn_curr:
-                self.start_btn_pressed = True
+        self.controller.update(joy_cmd)
+        events = self.controller.btn_events
+        if 'start_pressed' in events:
+            self.primary_record = not self.primary_record
+            # disable recording safety
+            self.safety_record = False
+            if self.primary_record:
+                rospy.loginfo('[*]Start recording primary data.')
             else:
-                self.start_btn_pressed = False
-        else:
-            self.start_btn_pressed = False
+                rospy.loginfo('[*]Stop recording primary data.')
 
-        if self.start_btn_pressed:
-            self.record = not self.record
-            if self.record:
-                rospy.loginfo('[*]Start recording.')
+        elif 'Triangle_pressed' in events:
+            self.safety_record = not self.safety_record
+            # disable primary
+            self.primary_record = False
+            if self.safety_record:
+                rospy.loginfo('[*]Start recording safety data.')
             else:
-                rospy.loginfo('[*]Stop recording.')
-        # print(self.start_btn_press)
+                rospy.loginfo('[*]Stop recording safety data.')
+
 
 if __name__ == '__main__':
     try:

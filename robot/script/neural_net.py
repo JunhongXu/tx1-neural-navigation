@@ -13,6 +13,7 @@ from tf_model import NeuralCommander
 import cv_bridge
 import tensorflow as tf
 import cv2
+from controller import *
 
 
 class NeuralNet(object):

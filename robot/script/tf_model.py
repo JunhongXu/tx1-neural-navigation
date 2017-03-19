@@ -6,7 +6,6 @@ from tensorflow.contrib import layers
 import pickle
 import numpy as np
 
-
 """
 Made some minor changes from mode/tf_model.py because of tensorflow r0.11 and 1.0 compatibility.
 This class should be in robot/script/ folder.

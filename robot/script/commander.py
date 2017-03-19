@@ -14,7 +14,7 @@ import rospy
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from geometry_msgs.msg import TwistStamped, Twist
-import numpy as np
+from controller import *
 
 
 class Commander(object):
@@ -33,6 +33,7 @@ class Commander(object):
         # initialize rosnode
         rospy.init_node('commander', anonymous=True)
         self.rate = rospy.Rate(60)
+
 
     def run(self):
         while not rospy.is_shutdown():

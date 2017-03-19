@@ -4,33 +4,27 @@ import glob
 import pickle
 import tensorflow as tf
 from model.tf_model import NeuralCommander
+import os
 
-def load_data(val_num=200, read_rgb=True, read_depth=False, display=False):
+
+def __split_name(labels, name):
+    splitted = name.split('_')
+    v = float(splitted[2])
+    r = float(splitted[3].strip('.png'))
+    label = np.array([v/0.5, r/4.25], dtype=np.float32)
+    labels.append(label)
+    print(label)
+
+
+def load_data(val_num=200, read_rgb=True, read_depth=False, display=False, safety=False):
     """Read all images in RGB and DEPTH"""
-    def __split_name(labels, name):
-        # don't know why these are needed....
-        splitted = name.strip(' ').split('-')
-        # get velocity
-        try:
-            v = float(splitted[1])
-        except:
-            v = -float(splitted[2])
-            # get rotation
-        if splitted[-2] == '':
-            r = -float(splitted[-1].strip('.png'))
-        else:
-            r = float(splitted[-1].strip('.png'))
-        label = np.array([v/0.5, r/4.25], dtype=np.float32)
-        print(label)
-        labels.append(label)
-
     rgb_imgs = []
     rgb_labels = []
     depth_imgs = []
     depth_labels = []
-
+    filedir = 'safety'
     if read_rgb:
-        rgb_names = glob.glob('RGB_DATA/*.png')
+        rgb_names = glob.glob(os.path.join(filedir, 'RGB_DATA/*.png'))
         print('[*]Collected %s RGB pictures.' % len(rgb_names))
         for n in sorted(rgb_names):
             __split_name(rgb_labels, n)
@@ -42,7 +36,7 @@ def load_data(val_num=200, read_rgb=True, read_depth=False, display=False):
             rgb_imgs.append(rgb_img)
 
     if read_depth:
-        depth_names = glob.glob('DEPTH_DATA/*.png')
+        depth_names = glob.glob(os.path.join(filedir, 'DEPTH_DATA/*.png'))
         print('[*]Collected %s DEPTH pictures.' % len(depth_names))
         for n in depth_names:
             __split_name(depth_labels, n)
