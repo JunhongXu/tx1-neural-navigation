@@ -23,7 +23,7 @@ class NeuralNet(object):
         self.neural_net_on = False
         self.twist_cmd = rospy.Publisher('/neural_cmd', Twist)
         self.sess = tf.Session()
-        self.model.restore(self.sess)
+        # self.model.restore(self.sess)
         self.bridge = cv_bridge.CvBridge()
         self.start_btn_prev = False
         self.start_btn_curr = False
