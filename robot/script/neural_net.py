@@ -56,10 +56,11 @@ class NeuralNet(object):
             twist = Twist()
             x = self.bridge.imgmsg_to_cv2(data)
             x = cv2.resize(x, (128, 128))
-            cmd = self.model.predict(self.sess, x.reshape(1, 128, 128, 3))
-            rospy.loginfo('Predicted steer command: linear: %s, angular: %s' %(cmd[0][0]*0.5, cmd[0][1]*4.25))
-            twist.linear.x = cmd[0][0]*0.5
-            twist.angular.z = cmd[0][1]*4.25
+            primary_pi, safety_pi = self.model.predict(self.sess, x.reshape(1, 128, 128, 3))
+            rospy.loginfo('[*]Steering command: linear: %s, angular: %s' %(primary_pi[0][0]*0.5, primary_pi[0][1]*4.25))
+            rospy.loginfo('[*]Safety value: %s' % safety_pi)
+            twist.linear.x = primary_pi[0][0]*0.5
+            twist.angular.z = primary_pi[0][1]*4.25
             # publish the command
             self.twist_cmd.publish(twist)
 

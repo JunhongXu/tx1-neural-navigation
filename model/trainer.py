@@ -5,33 +5,36 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-RESTORE = True
-
-# check the version of tensorflow
-tf_version = tf.__version__
-if tf_version.split('.')[0] < 0:
-    older = True
-else:
-    older = False
+TRAIN_ITER = 0
+BATCH_SIZE = 128
+SAFETY_THRESHOLD = 0.0025
+DISPLAY = False
+NUM_ITERS = 20000
 
 
-def train(sess, model, trainer, safety_trainer, num_iter):
-    x, y, _, _ = load_data(display=False)
+def train_primary_policy(writer, model, num_iter, trainer):
+    # load data for primary policy
+    x, y, _, _ = load_data(TRAIN_ITER, display=DISPLAY)
     N, H, W, C = x.shape
-    print(x.shape)
-    print(y.shape)
+    summary = tf.summary.scalar('primary_loss', model.loss)
     # train the primary policy
     for i in range(num_iter):
         # random index
-        index = np.random.randint(0, N, size=128)
-        loss, _ = sess.run([model.loss, trainer], feed_dict={model.x: x[index],
+        index = np.random.randint(0, N, size=BATCH_SIZE)
+        loss, _, loss_summary = sess.run([model.loss, trainer, summary], feed_dict={model.x: x[index],
                                                              model.y: y[index], model.is_training:True})
-        if i % 20 == 0:
+        writer.add_summary(loss_summary, global_step=i)
+        if i % 99 == 0:
             # save
-            model.save(sess)
-            print(loss)
+            model.save(sess, TRAIN_ITER)
+            print('[*]At iteration %s/%s, loss is %s' % (i, num_iter, loss))
 
-    safety_x, pi_label, _, _ = load_data(display=False, safety=True)
+
+def train_safety_policy(writer, model, num_iter, trainer):
+    # load data for training safety policy
+    safety_x, pi_label, _, _ = load_data(TRAIN_ITER, display=DISPLAY, safety=True)
+    N, H, W, C = safety_x.shape
+    summary = tf.summary.scalar('safety_loss', model.safety_loss)
     safety_label = []
     safety_features = []
     # calculate safety labels and fc1 features
@@ -40,35 +43,72 @@ def train(sess, model, trainer, safety_trainer, num_iter):
             model.x: safety_x[i].reshape(1, 128, 128, 3),
             model.is_training: True
         })
-        label = 1 if np.sqrt(np.sum(np.square(pi_label[0] - primary_pi[0]))) > 0.0025 else 0
+        label = 1 if np.sum(np.square(pi_label[i] - primary_pi[0])) > SAFETY_THRESHOLD else 0
+
         safety_features.append(fc1)
         safety_label.append(label)
+        print('Label %s // Ground Truth %s // Primary Policy %s' % (label, pi_label[i], primary_pi))
+        print('[*]Error: %s' % np.sum(np.square(pi_label[i] - primary_pi[0])))
+
+    y = np.array(safety_label)
+    y = np.expand_dims(y, axis=1)
+    x = np.array(safety_features)
+    x = np.squeeze(x, axis=1)
     # train the safety policy
     for i in range(num_iter):
-        pass
+        # random index
+        index = np.random.randint(0, N, size=BATCH_SIZE)
+        loss, _, loss_summary = sess.run([model.safety_loss, trainer, summary], feed_dict={model.safety_inpt: x[index],
+                                                             model.safety_y: y[index], model.is_training:True})
+        writer.add_summary(loss_summary, global_step=i)
+        if i % 99 == 0:
+            # save
+            model.save(sess, TRAIN_ITER)
+            print('[*]At iteration %s/%s, loss is %s' % (i, num_iter, loss))
+
+
+def train(sess, model, trainer, safety_trainer, num_iter):
+    model_save_path = os.path.join('../checkpoint', str(TRAIN_ITER))
+    summary_save_path = os.path.join('../summary', str(TRAIN_ITER))
+    # create folders
+    if not os.path.exists(model_save_path):
+        os.makedirs(model_save_path)
+
+    if not os.path.exists(summary_save_path):
+        os.makedirs(summary_save_path)
+
+    # summary writer
+    writer = tf.summary.FileWriter(summary_save_path, graph=sess.graph)
+
+    # primary policy
+    train_primary_policy(writer, num_iter=num_iter, trainer=trainer, model=model)
+
+    # safety policy
+    train_safety_policy(writer, model, num_iter, safety_trainer)
+
 
 if __name__ == '__main__':
     with tf.Session() as sess:
         model = NeuralCommander()
         # trainer for primary policy
-        primary_policy_trainer = optimize_loss(model.loss, model.global_pi_setp, learning_rate=0.00001,
-                                               optimizer='Adam', variables=[v for v in tf.trainable_variables()
-                                                                            if 'cnn' in v.name])
+        primary_policy_trainer = optimize_loss(
+            model.loss, model.global_pi_setp, learning_rate=0.00001, name='primary_optimizer',
+            optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'cnn' in v.name]
+        )
 
         # trainer for safety policy
-        safety_policy_trainer = optimize_loss(model.safety_loss, model.global_safety_step, learning_rate=0.0001,
-                                              optimizer='Adam', variables=[v for v in tf.trainable_variables()
-                                                                           if 'safety_policy' in v.name])
-        if RESTORE:
-            model.restore(sess)
+        safety_policy_trainer = optimize_loss(
+            model.safety_loss, model.global_safety_step, learning_rate=0.0003, name='safety_optimizer',
+            optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'safety_policy' in v.name]
+        )
 
         # initialize all variables
-        if older:
-            sess.run(tf.initialize_all_variables())
-        else:
-            sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer())
 
-        train(sess, model, primary_policy_trainer, safety_policy_trainer, 100000)
-    convert_to_pkl()
+        if TRAIN_ITER > 0:
+            model.restore(sess, TRAIN_ITER)
+
+        train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
+    convert_to_pkl(TRAIN_ITER)
 
 

@@ -50,7 +50,12 @@ class NeuralCommander(object):
         self.saver = tf.train.Saver(var_list=tf.trainable_variables())
 
     def predict(self, sess, x):
-        return sess.run(self.pi, feed_dict={self.x: x, self.is_training: False})
+        # predict the primary policy and feature vector
+        primary_pi, feature = sess.run([self.pi, self.layers[-3]], feed_dict={self.x: x, self.is_training: False})
+
+        # predict the safety policy
+        safety = sess.run(self.safety_pi, feed_dict={self.safety_inpt: feature, self.is_training: False})
+        return primary_pi, safety
 
     def save(self, sess):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')

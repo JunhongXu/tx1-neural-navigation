@@ -28,9 +28,11 @@ class NeuralCommander(object):
         for p in self.params:
             print('{}: {}'.format(p.name, p.get_shape()))
 
-        # loss
-        self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi), 1)),
-                                   name='loss')
+        # primary loss
+        with tf.variable_scope('primary_loss'):
+            self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi), 1)), name='loss')
+
+        # safety loss
         self.safety_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.safety_y,
                                                                                   logits=self.safety_pi,
                                                                                   name='safety_loss'))
@@ -44,14 +46,17 @@ class NeuralCommander(object):
     def predict(self, sess, x):
         return sess.run(self.pi, feed_dict={self.x: x, self.is_training: False})
 
-    def save(self, sess):
-        self.saver.save(sess, save_path='../checkpoint/cnn-model')
+    def save(self, sess, num_iter):
+        self.saver.save(sess, save_path='../checkpoint/%s/cnn-model' % num_iter)
+        print('[*]Completely saved model.')
 
-    def restore(self, sess):
-        saver = tf.train.import_meta_graph('../checkpoint/cnn-model.meta')
-        saver.restore(sess, tf.train.latest_checkpoint('../checkpoint'))
-        for v in self.params:
-            print(v.name)
+    def restore(self, sess, num_iter):
+        ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/' % num_iter)
+        print(ckpt.model_checkpoint_path)
+        if ckpt and ckpt.model_checkpoint_path:
+            self.saver.restore(sess, ckpt.model_checkpoint_path)
+        else:
+            print('...no checkpoint found...')
 
     def build_safety(self):
         with tf.variable_scope('safety_policy'):

@@ -9,20 +9,22 @@ import os
 
 def __split_name(labels, name):
     splitted = name.split('_')
-    v = float(splitted[2])
-    r = float(splitted[3].strip('.png'))
+    v = float(splitted[-2])
+    r = float(splitted[-1].strip('.png'))
     label = np.array([v/0.5, r/4.25], dtype=np.float32)
     labels.append(label)
-    print(label)
 
 
-def load_data(val_num=200, read_rgb=True, read_depth=False, display=False, safety=False):
+def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=False, safety=False):
     """Read all images in RGB and DEPTH"""
     rgb_imgs = []
     rgb_labels = []
     depth_imgs = []
     depth_labels = []
-    filedir = 'safety'
+    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/iteration_%s' % iteration
+    filedir = os.path.join(filedir, 'safety' if safety else 'primary')
+    print(filedir)
+
     if read_rgb:
         rgb_names = glob.glob(os.path.join(filedir, 'RGB_DATA/*.png'))
         print('[*]Collected %s RGB pictures.' % len(rgb_names))
@@ -46,13 +48,14 @@ def load_data(val_num=200, read_rgb=True, read_depth=False, display=False, safet
     return np.array(rgb_imgs), np.array(rgb_labels), np.array(depth_imgs), np.array(depth_labels)
 
 
-def convert_to_pkl():
+def convert_to_pkl(train_iter):
     """Save tensorflow model to a pickle file"""
     params = {}
     with tf.Session() as sess:
         model = NeuralCommander()
-        model.restore(sess)
+        model.restore(sess, train_iter)
         for v in model.params:
             params[v.name] = sess.run(v)
-    with open('../checkpoint/picke_model.pkl', 'w') as f:
+    with open('../checkpoint/%s/pkl_model.pkl' % train_iter, 'w') as f:
         pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
+    print('[*]Saved to pkl file')
