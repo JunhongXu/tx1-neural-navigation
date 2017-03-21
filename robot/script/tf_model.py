@@ -31,6 +31,8 @@ class NeuralCommander(object):
         # build the safety policy
         self.safety_pi = self.build_safety()
 
+        self.safety_logit = tf.nn.sigmoid(self.safety_pi)
+
         self.params = tf.trainable_variables()
         # print all parameters and ops
         for p in self.params:
@@ -54,7 +56,7 @@ class NeuralCommander(object):
         primary_pi, feature = sess.run([self.pi, self.layers[-3]], feed_dict={self.x: x, self.is_training: False})
 
         # predict the safety policy
-        safety = sess.run(self.safety_pi, feed_dict={self.safety_inpt: feature, self.is_training: False})
+        safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})
         return primary_pi, safety
 
     def save(self, sess):

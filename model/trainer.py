@@ -12,9 +12,7 @@ DISPLAY = False
 NUM_ITERS = 20000
 
 
-def train_primary_policy(writer, model, num_iter, trainer):
-    # load data for primary policy
-    x, y, _, _ = load_data(TRAIN_ITER, display=DISPLAY)
+def train_primary_policy(x, y, writer, model, num_iter, trainer):
     N, H, W, C = x.shape
     summary = tf.summary.scalar('primary_loss', model.loss)
     # train the primary policy
@@ -30,9 +28,8 @@ def train_primary_policy(writer, model, num_iter, trainer):
             print('[*]At iteration %s/%s, loss is %s' % (i, num_iter, loss))
 
 
-def train_safety_policy(writer, model, num_iter, trainer):
-    # load data for training safety policy
-    safety_x, pi_label, _, _ = load_data(TRAIN_ITER, display=DISPLAY, safety=True)
+def train_safety_policy(safety_x, pi_label, writer, model, num_iter, trainer):
+
     N, H, W, C = safety_x.shape
     summary = tf.summary.scalar('safety_loss', model.safety_loss)
     safety_label = []
@@ -77,14 +74,24 @@ def train(sess, model, trainer, safety_trainer, num_iter):
     if not os.path.exists(summary_save_path):
         os.makedirs(summary_save_path)
 
+    # load data for primary policy
+    x, y, _, _ = load_data(TRAIN_ITER, display=DISPLAY)
+
+    # load data for training safety policy
+    safety_x, pi_label, _, _ = load_data(TRAIN_ITER, display=DISPLAY, safety=True)
+
+    # concate dataset
+    safety_x = np.concatenate((safety_x, x), axis=0)
+    pi_label = np.concatenate((pi_label, y), axis=0)
+
     # summary writer
     writer = tf.summary.FileWriter(summary_save_path, graph=sess.graph)
 
     # primary policy
-    train_primary_policy(writer, num_iter=num_iter, trainer=trainer, model=model)
+    # train_primary_policy(x, y, writer, num_iter=num_iter, trainer=trainer, model=model)
 
     # safety policy
-    train_safety_policy(writer, model, num_iter, safety_trainer)
+    train_safety_policy(safety_x, pi_label, writer, model, num_iter, safety_trainer)
 
 
 if __name__ == '__main__':
@@ -105,7 +112,7 @@ if __name__ == '__main__':
         # initialize all variables
         sess.run(tf.global_variables_initializer())
 
-        if TRAIN_ITER > 0:
+        if TRAIN_ITER > -1:
             model.restore(sess, TRAIN_ITER)
 
         train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
