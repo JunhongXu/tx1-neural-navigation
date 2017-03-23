@@ -69,7 +69,7 @@ class NeuralNet(object):
             twist.linear.x = primary_pi[0][0]*0.5
             twist.angular.z = primary_pi[0][1]*4.25
 
-            if safety_pi > 0.8:
+            if safety_pi > 0.7:
                 if not self.human_cmd:
                     rospy.loginfo('[!]UNSAFE SITUATION DETECTED! Waiting for human instruction.')
                 self.safe = False
@@ -93,7 +93,7 @@ class NeuralNet(object):
                     self.twist_cmd.publish(twist)
                     self.human_twist.publish(self.human_twist_cmd)
                 else:
-                    twist = Twist
+                    twist = Twist()
                     twist.angular.z = 0.0
                     twist.linear.x = 0.0
                     self.twist_cmd.publish(twist)
