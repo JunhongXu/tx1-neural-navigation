@@ -92,6 +92,11 @@ class NeuralNet(object):
                     rospy.loginfo('[*]Safety value: %s' % safety_pi)
                     self.twist_cmd.publish(twist)
                     self.human_twist.publish(self.human_twist_cmd)
+                else:
+                    twist = Twist
+                    twist.angular.z = 0.0
+                    twist.linear.x = 0.0
+                    self.twist_cmd.publish(twist)
             self.human_control.publish(Bool(self.human_cmd))
 
 

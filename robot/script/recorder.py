@@ -88,7 +88,6 @@ class Recorder(object):
     def update_human_twist(self, data):
         with self.twist_lock:
             self.human_twist = data
-            rospy.loginfo(self.human_twist)
 
     def record_img(self, data, type, twist):
         try:
