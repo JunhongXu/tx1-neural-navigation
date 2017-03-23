@@ -40,6 +40,7 @@ def train_safety_policy(safety_x, pi_label, writer, model, num_iter, trainer):
             model.x: safety_x[i].reshape(1, 128, 128, 3),
             model.is_training: True
         })
+        # if label is 1, it is extremely dangerous, 0 otherwise.
         label = 1 if np.sum(np.square(pi_label[i] - primary_pi[0])) > SAFETY_THRESHOLD else 0
 
         safety_features.append(fc1)

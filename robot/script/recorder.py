@@ -15,26 +15,33 @@ from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, Joy
+from std_msgs.msg import Bool
 import os
 from threading import Lock
 from controller import PS3
+import sys
+
 
 class Recorder(object):
-    def __init__(self):
+    def __init__(self, train_iter):
         rospy.loginfo('[*]Start recorder.')
         self.record = False
         self.bridge = CvBridge()
         self.twist = None
+        self.human_twist = None
         # create folders
-        self.SAFETY_RGB_PATH = '../safety/RGB_DATA/'
-        self.SAFETY_DEPTH_PATH = '../safety/DEPTH_DATA/'
-        self.DEPTH_PATH = '../primary/DEPTH_DATA/'
-        self.RGB_PATH = '../primary/RGB_DATA/'
+        self.SAFETY_RGB_PATH = '../safety/RGB_DATA/%s' % train_iter
+        self.SAFETY_DEPTH_PATH = '../safety/DEPTH_DATA/%s' % train_iter
+        self.DEPTH_PATH = '../primary/DEPTH_DATA/%s' % train_iter
+        self.RGB_PATH = '../primary/RGB_DATA/%s' % train_iter
         self.create_folders()
         self.twist_lock = Lock()
         self.controller = PS3()
         self.primary_record = False
         self.safety_record = False
+        self.nn_on = False
+        self.safe = True
+        self.human_control = False
         # rgb image
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
         # depth
@@ -45,6 +52,10 @@ class Recorder(object):
         rospy.Subscriber('/odom', Odometry, self.save_odom)
         # joy
         rospy.Subscriber('/joy', Joy, self.get_status)
+        # safety
+        rospy.Subscriber('/safety', Bool, self.update_safety)
+        rospy.Subscriber('/human', Bool, self.update_human_control)
+        rospy.Subscriber('/human_vel', Twist, self.update_human_twist)
         rospy.init_node('recorder')
         # keeps the node alive
         rospy.spin()
@@ -71,39 +82,46 @@ class Recorder(object):
             print('[!]Creating depth data folder.')
             os.makedirs(self.DEPTH_PATH)
 
+    def update_human_control(self, data):
+        self.human_control = data.data
+
+    def update_human_twist(self, data):
+        with self.twist_lock:
+            self.human_twist = data
+            rospy.loginfo(self.human_twist)
+
+    def record_img(self, data, type, twist):
+        try:
+            image = self.bridge.imgmsg_to_cv2(data)
+            # only record non-zero data
+            if self.twist is not None:
+                timestamp = data.header.stamp
+                v = twist.linear.x
+                r = twist.angular.z
+                with self.twist_lock:
+                    if type == 'depth':
+                        filename = self.SAFETY_DEPTH_PATH if self.safety_record and not self.nn_on else self.DEPTH_PATH
+                    else:
+                        filename = self.SAFETY_RGB_PATH if self.safety_record and not self.nn_on else self.RGB_PATH
+                    filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
+                image = cv2.resize(image, (256, 256))
+                # save image
+                cv2.imwrite(filename, image)
+        except CvBridgeError as error:
+            print(error)
+
     def save_rgb(self, rgb):
+        # if not safe and neural network is on
+        if not self.safe and self.nn_on and self.human_control:
+            rospy.loginfo('[!]Saving unsafe data...')
+            self.record_img(rgb, 'rgb', self.human_twist)
+
         if self.safety_record or self.primary_record:
-            try:
-                image = self.bridge.imgmsg_to_cv2(rgb)
-                if self.twist is not None:
-                    timestamp = rgb.header.stamp
-                    v = self.twist.linear.x
-                    r = self.twist.angular.z
-                    with self.twist_lock:
-                        filename = self.SAFETY_RGB_PATH if self.safety_record else self.RGB_PATH
-                        filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
-                    image = cv2.resize(image, (256, 256))
-                    # save image
-                    cv2.imwrite(filename, image)
-            except CvBridgeError as error:
-                print(error)
+            self.record_img(rgb, 'rgb', self.twist)
 
     def save_depth(self, depth):
         if self.primary_record or self.safety_record:
-            try:
-                image = self.bridge.imgmsg_to_cv2(depth)
-
-                if self.twist is not None:
-                    timestamp = depth.header.stamp
-                    v = self.twist.linear.x
-                    r = self.twist.angular.z
-                    with self.twist_lock:
-                        filename = self.SAFETY_DEPTH_PATH if self.safety_record else self.DEPTH_PATH
-                        filename = os.path.join(filename, '%s-%s-%s.png' % (timestamp, v, r))
-                    # save image
-                    cv2.imwrite(filename, image)
-            except CvBridgeError as error:
-                print(error)
+            self.record_img(depth, 'depth', self.twist)
 
     def get_twist(self, twist):
         with self.twist_lock:
@@ -130,9 +148,17 @@ class Recorder(object):
             else:
                 rospy.loginfo('[*]Stop recording safety data.')
 
+        elif 'R2_pressed' in events:
+            self.nn_on = not self.nn_on
+
+    def update_safety(self, data):
+        self.safe = data.data
+
 
 if __name__ == '__main__':
     try:
-        recorder = Recorder()
+        train_iter = sys.argv[2]
+        print('[!]Training Iteration %s' % train_iter)
+        recorder = Recorder(train_iter)
     except rospy.ROSInterruptException:
         pass

@@ -1,11 +1,16 @@
 <launch>
+    <arg name="iteration" default="0"/>
     <!--run zed launch file-->
     <include file="$(find zed_wrapper)/launch/zed.launch"/>
     <!--run create 2 launch file-->
     <include file="$(find ca_driver)/launch/create_2.launch"/>
     <!--run neural network-->
-    <node pkg="robot" type="neural_net.py" name="neural_net" output="screen" cwd="node"/>
+    <node pkg="robot" type="neural_net.py" name="neural_net" output="screen" args="--iteration $(arg iteration)"
+          cwd="node"/>
+
     <!--run recorder-->
-    <node pkg="robot" type="recorder.py" name="recorder" output="screen" cwd="node"/>
+    <node pkg="robot" type="recorder.py" name="recorder" output="screen" args="--iteration $(arg iteration)"
+          cwd="node"/>
+
     <node pkg="robot" type="commander.py" name="commander" output="screen"/>
 </launch>

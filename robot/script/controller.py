@@ -33,7 +33,6 @@ class PS3(object):
         right_stick_x = joy_data.axes[2]
         self.left_stick = left_stick_y
         self.right_stick = right_stick_x
-
         self.btn_events = self._get_btn_events(joy_data)
 
     def _get_btn_events(self, data):
