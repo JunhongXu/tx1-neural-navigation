@@ -37,6 +37,7 @@ class Commander(object):
         self.curr_x = 0
         self.prev_x = 0
         self.x = 0
+        self.is_avoid = True
 
         # subscriber
         rospy.Subscriber('/joy', Joy, self.joystick_cmd, queue_size=5)
@@ -77,13 +78,24 @@ class Commander(object):
         euler = transformations.euler_from_quaternion(quaternion)
         # self.euler = euler[-1]
         if self.bumper:
+            self.is_avoid = False
+            linear_avoid = False
+            angular_avoid = False
             if np.abs(self.curr_x - self.prev_x) < 0.5:
                 self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
+            else:
+                linear_avoid = True
 
             if self.desired_euler < euler[-1]:
                 # self.bumper_cmd.linear.x =
                 pass
+            else:
+                angular_avoid = True
+
+            if linear_avoid:
+                self.is_avoid = True
+
             rospy.loginfo('[!]Bumper')
         else:
             self.curr_x = self.prev_x = position
@@ -110,7 +122,7 @@ class Commander(object):
     def send_cmd(self):
         if self.neuralnet_mode:
             self.move_pub.publish(self.nn_cmd)
-        elif self.bumper:
+        elif self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
         else:
             self.move_pub.publish(self.joycmd)
