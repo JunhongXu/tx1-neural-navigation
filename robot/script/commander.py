@@ -91,10 +91,11 @@ class Commander(object):
             else:
                 linear_avoid = True
 
-            if np.abs(self.curr_euler - self.prev_euler) < self.desired_euler:
-                self.bumper_cmd.angular.z = 3.5
-            else:
-                angular_avoid = True
+            if linear_avoid:
+                if np.abs(self.curr_euler - self.prev_euler) < np.abs(self.desired_euler):
+                    self.bumper_cmd.angular.z = 3.5
+                else:
+                    angular_avoid = True
 
             if linear_avoid and angular_avoid:
                 self.is_avoid = True
