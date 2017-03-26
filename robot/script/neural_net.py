@@ -16,6 +16,7 @@ import tensorflow as tf
 import cv2
 from controller import *
 import sys
+from ca_msgs.msg import Bumper
 
 
 class NeuralNet(object):
@@ -24,21 +25,23 @@ class NeuralNet(object):
         self.train_iter = train_iter
         self.model = NeuralCommander()
         self.neural_net_on = False
-        self.twist_cmd = rospy.Publisher('/neural_cmd', Twist)
-        self.safety_cmd = rospy.Publisher('/safety', Bool)
-        self.human_control = rospy.Publisher('/human', Bool)
-        self.human_twist = rospy.Publisher('/human_vel', Twist, queue_size=1)
-        self.human_twist_cmd = Twist()
+        self.twist_cmd = rospy.Publisher('/neural_cmd', Twist, queue_size=5)
+        self.safety_cmd = rospy.Publisher('/safety', Bool, queue_size=5)
         self.sess = tf.Session()
         self.model.restore(self.sess, self.train_iter)
         self.bridge = cv_bridge.CvBridge()
         self.controller = PS3()
         self.safe = True
-        self.human_cmd = False
+        rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.predict)
         rospy.Subscriber('/joy', Joy, callback=self.toggle_nn)
         rospy.init_node('neural_commander')
         rospy.spin()
+
+    def reset(self, data):
+        """stop neural network until it is out of obstacle"""
+        if self.neural_net_on:
+            pass
 
     def toggle_nn(self, data):
         self.controller.update(data)
@@ -50,16 +53,6 @@ class NeuralNet(object):
             else:
                 rospy.loginfo('[*]Stop Neural Network.')
 
-        if 'Circle_pressed' in events and not self.safe:
-            self.human_cmd = True
-
-            rospy.loginfo('[*]Human labelling...')
-        if self.human_cmd:
-            vel = self.controller.left_stick*0.5
-            angular = self.controller.right_stick*4.5
-            self.human_twist_cmd.linear.x = vel
-            self.human_twist_cmd.angular.z = angular
-
     def predict(self, data):
         if self.neural_net_on:
             twist = Twist()
@@ -70,34 +63,18 @@ class NeuralNet(object):
             twist.angular.z = primary_pi[0][1]*4.25
 
             if safety_pi > 0.7:
-                if not self.human_cmd:
-                    rospy.loginfo('[!]UNSAFE SITUATION DETECTED! Waiting for human instruction.')
+                rospy.loginfo('[!]UNSAFE SITUATION DETECTED!')
                 self.safe = False
             else:
+                rospy.loginfo('[*]Angular velocity: %s' % twist.angular.z)
+                rospy.loginfo('[*]Linear velocity: %s' % twist.linear.x)
                 self.safe = True
 
+            # publish safety situation
             safety = Bool()
             safety.data = self.safe
             self.safety_cmd.publish(safety)
-
-            if self.safe:
-                # publish the command
-                self.twist_cmd.publish(twist)
-                # disable human command
-                self.human_cmd = False
-                rospy.loginfo('[*]Steering command: linear: %s, angular: %s' %(primary_pi[0][0]*0.5, primary_pi[0][1]*4.25))
-                rospy.loginfo('[*]Safety value: %s' % safety_pi)
-            else:
-                if self.human_cmd:
-                    rospy.loginfo('[!]Human labelling...')
-                    self.twist_cmd.publish(twist)
-                    self.human_twist.publish(self.human_twist_cmd)
-                else:
-                    twist = Twist()
-                    twist.angular.z = 0.0
-                    twist.linear.x = 0.0
-                    self.twist_cmd.publish(twist)
-            self.human_control.publish(Bool(self.human_cmd))
+            self.twist_cmd.publish(twist)
 
 
 if __name__ == '__main__':
