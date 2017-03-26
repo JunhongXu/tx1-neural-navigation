@@ -17,6 +17,7 @@ from geometry_msgs.msg import TwistStamped, Twist
 from controller import *
 from nav_msgs.msg import Odometry
 import tf.transformations as transformations
+import numpy as np
 
 
 class Commander(object):
@@ -25,9 +26,18 @@ class Commander(object):
         # joystick
         self.joycmd = Twist()
         self.nn_cmd = Twist()
+        self.bumper_cmd = Twist()
         # mode
         self.neuralnet_mode = False
         self.ps3 = PS3()
+
+        self.euler = 0
+        self.desired_euler = 0
+        self.bumper = False
+        self.curr_x = 0
+        self.prev_x = 0
+        self.x = 0
+
         # subscriber
         rospy.Subscriber('/joy', Joy, self.joystick_cmd, queue_size=5)
         rospy.Subscriber('/neural_cmd', Twist, self.neural_cmd, queue_size=5)
@@ -46,15 +56,37 @@ class Commander(object):
 
     def reset(self, data):
         """reset initial state"""
-        if data.is_left_pressed:
-            #self.nn_cmd.angular.z =
-            pass
+        if data.is_left_pressed and data.is_right_pressed:
+            # self.curr_x = self.prev_x = self.x
+            self.bumper = True
+            # reverse if encounter obstacles on both sides
+            self.desired_euler  = -np.pi
+        elif data.is_left_pressed:
+            self.bumper = True
+            self.desired_euler = 0
+        elif data.is_right_pressed:
+            self.bumper = True
+            self.desired_euler = 0
+        else:
+            self.bumper = False
 
     def update_odom(self, data):
         pose = data.pose.pose
         quaternion = (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w)
+        position = pose.position.x
         euler = transformations.euler_from_quaternion(quaternion)
-        rospy.loginfo(euler)
+        # self.euler = euler[-1]
+        if self.bumper:
+            if np.abs(self.curr_x - self.prev_x) < 0.5:
+                self.bumper_cmd.linear.x = 0.5
+                self.curr_x = position
+
+            if self.desired_euler < euler[-1]:
+                # self.bumper_cmd.linear.x =
+                pass
+            rospy.loginfo('[!]Bumper')
+        else:
+            self.curr_x = self.prev_x = position
 
     def joystick_cmd(self, cmd):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""
@@ -78,6 +110,8 @@ class Commander(object):
     def send_cmd(self):
         if self.neuralnet_mode:
             self.move_pub.publish(self.nn_cmd)
+        elif self.bumper:
+            self.move_pub.publish(self.bumper_cmd)
         else:
             self.move_pub.publish(self.joycmd)
 
