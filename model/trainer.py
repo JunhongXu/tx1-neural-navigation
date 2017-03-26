@@ -89,7 +89,7 @@ def train(sess, model, trainer, safety_trainer, num_iter):
     writer = tf.summary.FileWriter(summary_save_path, graph=sess.graph)
 
     # primary policy
-    # train_primary_policy(x, y, writer, num_iter=num_iter, trainer=trainer, model=model)
+    train_primary_policy(x, y, writer, num_iter=num_iter, trainer=trainer, model=model)
 
     # safety policy
     train_safety_policy(safety_x, pi_label, writer, model, num_iter, safety_trainer)
