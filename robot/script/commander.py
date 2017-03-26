@@ -78,7 +78,7 @@ class Commander(object):
         # self.euler = euler[-1]
         if self.bumper:
             if np.abs(self.curr_x - self.prev_x) < 0.5:
-                self.bumper_cmd.linear.x = 0.5
+                self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
 
             if self.desired_euler < euler[-1]:
