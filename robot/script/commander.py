@@ -80,8 +80,6 @@ class Commander(object):
         if self.bumper:
             self.is_avoid = False
             rospy.loginfo('[!]Bumper')
-        else:
-            self.curr_x = self.prev_x = position
 
         if not self.is_avoid:
             linear_avoid = False
