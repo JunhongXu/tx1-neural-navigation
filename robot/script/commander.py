@@ -38,6 +38,8 @@ class Commander(object):
         self.prev_euler = 0
         self.curr_euler = 0
         self.is_avoid = True
+        self.linear_avoid = False
+        self.angular_avoid = False
 
         # subscriber
         rospy.Subscriber('/joy', Joy, self.joystick_cmd, queue_size=5)
@@ -82,23 +84,23 @@ class Commander(object):
             rospy.loginfo('[!]Bumper')
 
         if not self.is_avoid:
-            linear_avoid = False
-            angular_avoid = False
             if np.abs(self.curr_x - self.prev_x) < 0.1:
                 self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
                 rospy.loginfo(self.curr_x - self.prev_x)
             else:
-                linear_avoid = True
+                self.linear_avoid = True
 
-            if linear_avoid:
+            if self.linear_avoid:
                 if np.abs(self.curr_euler - self.prev_euler) < np.abs(self.desired_euler):
                     self.bumper_cmd.angular.z = 3.5
+                    rospy.loginfo('{asdfasd}%s' % np.abs(self.curr_euler - self.prev_euler))
                 else:
-                    angular_avoid = True
+                    self.angular_avoid = True
 
-            if linear_avoid and angular_avoid:
+            if self.linear_avoid and self.angular_avoid:
                 self.is_avoid = True
+                self.linear_avoid = self.angular_avoid = False
 
         else:
             self.curr_euler = self.prev_euler = euler[-1]
