@@ -51,7 +51,7 @@ class Commander(object):
             pass
 
     def update_odom(self, data):
-        pose = data.pose
+        pose = data.pose.pose
         quaternion = (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w)
         euler = transformations.euler_from_quaternion(quaternion)
         rospy.loginfo(euler)
