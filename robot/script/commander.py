@@ -121,6 +121,7 @@ class Commander(object):
         self.nn_cmd = cmd
 
     def send_cmd(self):
+        rospy.loginfo(self.is_avoid)
         if self.neuralnet_mode:
             self.move_pub.publish(self.nn_cmd)
         elif not self.is_avoid:
