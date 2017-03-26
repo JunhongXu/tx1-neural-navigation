@@ -122,7 +122,7 @@ class Commander(object):
     def send_cmd(self):
         if self.neuralnet_mode:
             self.move_pub.publish(self.nn_cmd)
-        elif self.is_avoid:
+        elif not self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
         else:
             self.move_pub.publish(self.joycmd)
