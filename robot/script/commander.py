@@ -31,12 +31,12 @@ class Commander(object):
         self.neuralnet_mode = False
         self.ps3 = PS3()
 
-        self.euler = 0
         self.desired_euler = 0
         self.bumper = False
         self.curr_x = 0
         self.prev_x = 0
-        self.x = 0
+        self.prev_euler = 0
+        self.curr_euler = 0
         self.is_avoid = True
 
         # subscriber
@@ -64,10 +64,10 @@ class Commander(object):
             self.desired_euler  = -np.pi
         elif data.is_left_pressed:
             self.bumper = True
-            self.desired_euler = 0
+            self.desired_euler = -np.pi/2
         elif data.is_right_pressed:
             self.bumper = True
-            self.desired_euler = 0
+            self.desired_euler = np.pi/2
         else:
             self.bumper = False
 
@@ -91,16 +91,16 @@ class Commander(object):
             else:
                 linear_avoid = True
 
-            if self.desired_euler < euler[-1]:
-                # self.bumper_cmd.linear.x =
-                pass
+            if np.abs(self.curr_euler - self.prev_euler) < self.desired_euler:
+                self.bumper_cmd.angular.z = 3.5
             else:
                 angular_avoid = True
 
-            if linear_avoid:
+            if linear_avoid and angular_avoid:
                 self.is_avoid = True
 
         else:
+            self.curr_euler = self.prev_euler = euler[-1]
             self.curr_x = self.prev_x = position
 
     def joystick_cmd(self, cmd):
