@@ -83,13 +83,13 @@ class NeuralNet(object):
             if self.safe:
                 # publish the command
                 self.twist_cmd.publish(twist)
+                # disable human command
                 self.human_cmd = False
                 rospy.loginfo('[*]Steering command: linear: %s, angular: %s' %(primary_pi[0][0]*0.5, primary_pi[0][1]*4.25))
                 rospy.loginfo('[*]Safety value: %s' % safety_pi)
             else:
                 if self.human_cmd:
-                    rospy.loginfo('[*]Steering command: linear: %s, angular: %s' %(primary_pi[0][0]*0.5, primary_pi[0][1]*4.25))
-                    rospy.loginfo('[*]Safety value: %s' % safety_pi)
+                    rospy.loginfo('[!]Human labelling...')
                     self.twist_cmd.publish(twist)
                     self.human_twist.publish(self.human_twist_cmd)
                 else:
