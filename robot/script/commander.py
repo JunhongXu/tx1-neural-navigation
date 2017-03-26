@@ -63,13 +63,13 @@ class Commander(object):
             # self.curr_x = self.prev_x = self.x
             self.bumper = True
             # reverse if encounter obstacles on both sides
-            self.desired_euler  = -np.pi/2
+            self.desired_euler = np.pi/2
         elif data.is_left_pressed:
             self.bumper = True
-            self.desired_euler = -np.pi/2
+            self.desired_euler = np.pi/4
         elif data.is_right_pressed:
             self.bumper = True
-            self.desired_euler = np.pi/2
+            self.desired_euler = np.pi/4
         else:
             self.bumper = False
 
