@@ -14,6 +14,7 @@ import rospy
 from sensor_msgs.msg import Joy
 from ca_msgs.msg import Bumper
 from geometry_msgs.msg import TwistStamped, Twist
+from std_msgs.msg import Bool
 from controller import *
 from nav_msgs.msg import Odometry
 import tf.transformations as transformations
@@ -48,6 +49,7 @@ class Commander(object):
         rospy.Subscriber('/odom', Odometry, self.update_odom)
         # publisher
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=1)
         # initialize rosnode
         rospy.init_node('commander', anonymous=True)
         self.rate = rospy.Rate(60)
@@ -107,6 +109,7 @@ class Commander(object):
         else:
             self.curr_euler = self.prev_euler = euler[-1]
             self.curr_x = self.prev_x = position
+        self.reset_pub.publish(Bool(self.is_avoid))
 
     def joystick_cmd(self, cmd):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""

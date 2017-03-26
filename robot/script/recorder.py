@@ -40,6 +40,7 @@ class Recorder(object):
         self.safety_record = False
         self.safe = True
         self.twist = Twist()
+        self.avoided = True
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
         # depth
@@ -52,8 +53,8 @@ class Recorder(object):
         rospy.Subscriber('/joy', Joy, self.get_status)
         # safety
         rospy.Subscriber('/safety', Bool, self.update_safety)
-        # bumper msg
-        rospy.Subscriber('/bumper', Bumper, self.reset)
+
+        rospy.Subscriber('/reset', Bool, self.reset)
 
         rospy.init_node('recorder')
         # keeps the node alive
@@ -102,11 +103,11 @@ class Recorder(object):
             print(error)
 
     def save_rgb(self, rgb):
-        if self.safety_record or self.primary_record or not self.safe:
+        if self.safety_record or self.primary_record or (not self.safe and self.avoided):
             self.record_img(rgb, 'rgb', self.twist)
 
     def save_depth(self, depth):
-        if self.primary_record or self.safety_record or not self.safe:
+        if self.primary_record or self.safety_record or (not self.safe and self.avoided):
             self.record_img(depth, 'depth', self.twist)
 
     def get_twist(self, twist):
@@ -135,10 +136,7 @@ class Recorder(object):
                 rospy.loginfo('[*]Stop recording safety data.')
 
     def reset(self, data):
-        """reset the states if crashes"""
-        # rospy.loginfo(data)
-        if data.is_left_pressed:
-            pass
+        self.avoided = data.data
 
     def update_safety(self, data):
         self.safe = data.data
