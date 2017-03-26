@@ -123,12 +123,10 @@ class Commander(object):
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd
-        rospy.loginfo(self.nn_cmd)
-        rospy.loginfo(self.neuralnet_mode)
 
     def send_cmd(self):
         # rospy.loginfo(self.is_avoid)
-        if self.neuralnet_mode:
+        if self.neuralnet_mode and self.is_avoid:
             self.move_pub.publish(self.nn_cmd)
         elif not self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
