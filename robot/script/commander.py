@@ -94,8 +94,8 @@ class Commander(object):
             if self.linear_avoid:
                 if np.abs(self.curr_euler - self.prev_euler) < np.abs(self.desired_euler):
                     self.curr_euler = euler[-1]
+                    self.bumper_cmd.linear.x = 0
                     self.bumper_cmd.angular.z = 3.5
-                    rospy.loginfo('{asdfasd}%s' % np.abs(self.curr_euler - self.prev_euler))
                 else:
                     self.angular_avoid = True
 
