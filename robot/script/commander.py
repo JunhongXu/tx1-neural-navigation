@@ -81,7 +81,7 @@ class Commander(object):
             self.is_avoid = False
             linear_avoid = False
             angular_avoid = False
-            if np.abs(self.curr_x - self.prev_x) < 0.5:
+            if np.abs(self.curr_x - self.prev_x) < 0.1:
                 self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
             else:
