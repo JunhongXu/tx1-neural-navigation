@@ -136,7 +136,9 @@ class Recorder(object):
 
     def reset(self, data):
         """reset the states if crashes"""
-        rospy.loginfo(data)
+        # rospy.loginfo(data)
+        if data.is_left_pressed:
+            pass
 
     def update_safety(self, data):
         self.safe = data.data

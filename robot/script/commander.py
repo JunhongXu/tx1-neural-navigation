@@ -12,9 +12,10 @@ Publisher:
 
 import rospy
 from sensor_msgs.msg import Joy
-from std_msgs.msg import Bool
+from ca_msgs.msg import Bumper
 from geometry_msgs.msg import TwistStamped, Twist
 from controller import *
+from nav_msgs.msg import Odometry
 
 
 class Commander(object):
@@ -29,6 +30,8 @@ class Commander(object):
         # subscriber
         rospy.Subscriber('/joy', Joy, self.joystick_cmd, queue_size=5)
         rospy.Subscriber('/neural_cmd', Twist, self.neural_cmd, queue_size=5)
+        rospy.Subscriber('/bumper', Bumper, self.reset)
+        rospy.Subscriber('/odom', Odometry, self.update_odom)
         # publisher
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         # initialize rosnode
@@ -39,6 +42,15 @@ class Commander(object):
         while not rospy.is_shutdown():
             self.send_cmd()
             self.rate.sleep()
+
+    def reset(self, data):
+        """reset initial state"""
+        if data.is_left_pressed:
+            #self.nn_cmd.angular.z =
+            pass
+
+    def update_odom(self, data):
+        rospy.loginfo(data)
 
     def joystick_cmd(self, cmd):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""
