@@ -16,6 +16,7 @@ from ca_msgs.msg import Bumper
 from geometry_msgs.msg import TwistStamped, Twist
 from controller import *
 from nav_msgs.msg import Odometry
+import tf.transformations as transformations
 
 
 class Commander(object):
@@ -50,7 +51,10 @@ class Commander(object):
             pass
 
     def update_odom(self, data):
-        rospy.loginfo(data)
+        pose = data.pose
+        quaternion = (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w)
+        euler = transformations.euler_from_quaternion(quaternion)
+        rospy.loginfo(euler)
 
     def joystick_cmd(self, cmd):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""
