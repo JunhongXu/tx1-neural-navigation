@@ -79,6 +79,11 @@ class Commander(object):
         # self.euler = euler[-1]
         if self.bumper:
             self.is_avoid = False
+            rospy.loginfo('[!]Bumper')
+        else:
+            self.curr_x = self.prev_x = position
+
+        if not self.is_avoid:
             linear_avoid = False
             angular_avoid = False
             if np.abs(self.curr_x - self.prev_x) < 0.1:
@@ -97,7 +102,6 @@ class Commander(object):
             if linear_avoid:
                 self.is_avoid = True
 
-            rospy.loginfo('[!]Bumper')
         else:
             self.curr_x = self.prev_x = position
 
