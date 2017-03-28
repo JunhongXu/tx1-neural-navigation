@@ -48,6 +48,35 @@ def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=F
     return np.array(rgb_imgs), np.array(rgb_labels), np.array(depth_imgs), np.array(depth_labels)
 
 
+def convert_labels(sess, model, safe_img, reference_label, threshhold):
+    """
+        This function labels each image a 0 or a one, where 0 means no danger, 1 means danger.
+        Returns the feature extracted from primary policy cnn and the labels.
+    """
+    safety_features = []
+    safety_label = []
+    # calculate safety labels and fc1 features
+    for i in range(0, reference_label.shape[0]):
+        fc1, primary_pi = sess.run([model.layers[-3], model.pi], feed_dict={
+            model.x: safe_img[i].reshape(1, 128, 128, 3),
+            model.is_training: True
+        })
+        # if label is 1, it is extremely dangerous, 0 otherwise.
+        label = 1 if np.sum(np.square(reference_label[i] - primary_pi[0])) > threshhold else 0
+
+        safety_features.append(fc1)
+        safety_label.append(label)
+        print('Label %s // Ground Truth %s // Primary Policy %s' % (label, reference_label[i], primary_pi))
+        print('[*]Error: %s' % np.sum(np.square(reference_label[i] - primary_pi[0])))
+    # labels
+    y = np.array(safety_label)
+    y = np.expand_dims(y, axis=1)
+    # features
+    x = np.array(safety_features)
+    x = np.squeeze(x, axis=1)
+    return x, y
+
+
 def convert_to_pkl(train_iter):
     """Save tensorflow model to a pickle file"""
     params = {}

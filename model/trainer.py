@@ -12,7 +12,7 @@ DISPLAY = False
 NUM_ITERS = 20000
 
 
-def train_primary_policy(x, y, writer, model, num_iter, trainer):
+def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):
     N, H, W, C = x.shape
     summary = tf.summary.scalar('primary_loss', model.loss)
     # train the primary policy
@@ -28,30 +28,12 @@ def train_primary_policy(x, y, writer, model, num_iter, trainer):
             print('[*]At iteration %s/%s, loss is %s' % (i, num_iter, loss))
 
 
-def train_safety_policy(safety_x, pi_label, writer, model, num_iter, trainer):
+def train_safety_policy(sess, safety_x, pi_label, writer, model, num_iter, trainer):
 
     N, H, W, C = safety_x.shape
     summary = tf.summary.scalar('safety_loss', model.safety_loss)
-    safety_label = []
-    safety_features = []
-    # calculate safety labels and fc1 features
-    for i in range(0, pi_label.shape[0]):
-        fc1, primary_pi = sess.run([model.layers[-3], model.pi], feed_dict={
-            model.x: safety_x[i].reshape(1, 128, 128, 3),
-            model.is_training: True
-        })
-        # if label is 1, it is extremely dangerous, 0 otherwise.
-        label = 1 if np.sum(np.square(pi_label[i] - primary_pi[0])) > SAFETY_THRESHOLD else 0
-
-        safety_features.append(fc1)
-        safety_label.append(label)
-        print('Label %s // Ground Truth %s // Primary Policy %s' % (label, pi_label[i], primary_pi))
-        print('[*]Error: %s' % np.sum(np.square(pi_label[i] - primary_pi[0])))
-
-    y = np.array(safety_label)
-    y = np.expand_dims(y, axis=1)
-    x = np.array(safety_features)
-    x = np.squeeze(x, axis=1)
+    x, y = convert_labels(sess=sess, model=model, reference_label=pi_label, safe_img=safety_x,
+                          threshhold=SAFETY_THRESHOLD)
     # train the safety policy
     for i in range(num_iter):
         # random index
@@ -89,10 +71,10 @@ def train(sess, model, trainer, safety_trainer, num_iter):
     writer = tf.summary.FileWriter(summary_save_path, graph=sess.graph)
 
     # primary policy
-    train_primary_policy(x, y, writer, num_iter=num_iter, trainer=trainer, model=model)
+    train_primary_policy(sess, x, y, writer, num_iter=num_iter, trainer=trainer, model=model)
 
     # safety policy
-    train_safety_policy(safety_x, pi_label, writer, model, num_iter, safety_trainer)
+    train_safety_policy(sess, safety_x, pi_label, writer, model, num_iter, safety_trainer)
 
 
 if __name__ == '__main__':
