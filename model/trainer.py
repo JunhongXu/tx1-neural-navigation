@@ -82,7 +82,7 @@ if __name__ == '__main__':
         model = NeuralCommander()
         # trainer for primary policy
         primary_policy_trainer = optimize_loss(
-            model.loss, model.global_pi_setp, learning_rate=0.00001, name='primary_optimizer',
+            model.loss, model.global_pi_setp, learning_rate=0.00005, name='primary_optimizer',
             optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'cnn' in v.name]
         )
 
@@ -96,7 +96,8 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
 
         if TRAIN_ITER > -1:
-            model.restore(sess, TRAIN_ITER)
+            # model.restore(sess, TRAIN_ITER)
+            pass
 
         train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(TRAIN_ITER)

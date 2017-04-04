@@ -71,7 +71,7 @@ class NeuralCommander(object):
                 fc1 = layers.fully_connected(self.safety_inpt, 200, scope=scope)
 
             with tf.variable_scope('dropoout'):
-                dropout = layers.dropout(fc1, is_training=self.is_training)
+                dropout = layers.dropout(fc1, keep_prob=0.5, is_training=self.is_training)
 
             with tf.variable_scope('fc2') as scope:
                 fc2 = layers.fully_connected(dropout, 1, scope=scope, activation_fn=None)
