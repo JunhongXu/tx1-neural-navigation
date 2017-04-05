@@ -75,6 +75,7 @@ class DepthController(object):
             print(error)
 
     def reject_outliers(self, data):
+        print(data)
         return data[abs(data - np.mean(data)) < np.std(data)]
 
 
