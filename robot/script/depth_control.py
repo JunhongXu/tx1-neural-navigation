@@ -44,7 +44,7 @@ class DepthController(object):
             H, W = depth_img.shape
             # processing depth
             depth_img = np.nan_to_num(depth_img)
-            depth_img[depth_img > 20] = 0
+            depth_img[depth_img > 5] = 0
             depth_img[depth_img <= 0] = 0
             depth_img = depth_img[:H//10]
             info = np.zeros(2)
@@ -75,7 +75,7 @@ class DepthController(object):
             print(error)
 
     def reject_outliers(self, data):
-        return data[abs(data - np.mean(data)) < 2 * np.std(data)]
+        return data[abs(data - np.mean(data)) < np.std(data)]
 
 
 if __name__ == '__main__':
