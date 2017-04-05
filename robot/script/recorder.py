@@ -28,6 +28,7 @@ class Recorder(object):
         rospy.loginfo('[*]Start recorder.')
         self.record = False
         self.bridge = CvBridge()
+        self.train_iter = train_iter
         # create folders
         self.SAFETY_RGB_PATH = '../safety/RGB_DATA/%s' % train_iter
         self.SAFETY_DEPTH_PATH = '../safety/DEPTH_DATA/%s' % train_iter
@@ -41,6 +42,9 @@ class Recorder(object):
         self.safe = True
         self.twist = Twist()
         self.avoided = True
+        self.num_crashes = 0
+        self.num_frames = 0
+        self.total_frame = 0
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
         # depth
@@ -57,8 +61,28 @@ class Recorder(object):
         rospy.Subscriber('/reset', Bool, self.reset)
 
         rospy.init_node('recorder')
+
+        rospy.on_shutdown(self.shutdown)
         # keeps the node alive
         rospy.spin()
+
+    def shutdown(self):
+        crashes = '{}, {}'.format(self.train_iter, self.num_crashes)
+        frames = '{}, {}, {}'.format(self.train_iter, self.num_frames, self.total_frame)
+        rospy.loginfo('[*]Saving data...')
+        if not os.path.exists('../crashes.csv'):
+            with open('../crashes.csv', 'w') as f:
+                f.write(crashes)
+        else:
+            with open('../crashes.csv', 'a') as f:
+                f.write('\n{}'.format(crashes))
+
+        if not os.path.exists('../frames.csv'):
+            with open('../frames.csv', 'w') as f:
+                f.write(frames)
+        else:
+            with open('../frames.csv', 'a') as f:
+                f.write('\n{}'.format(frames))
 
 
     # TODO: Get odometry data
@@ -103,6 +127,8 @@ class Recorder(object):
             print(error)
 
     def save_rgb(self, rgb):
+        if self.primary_record:
+            self.total_frame += 1
         if self.safety_record or self.primary_record or (not self.safe and self.avoided):
             self.record_img(rgb, 'rgb', self.twist)
 
