@@ -86,7 +86,7 @@ class Commander(object):
             rospy.loginfo('[!]Bumper')
 
         if not self.is_avoid:
-            if np.abs(self.curr_x - self.prev_x) < 0.1:
+            if np.abs(self.curr_x - self.prev_x) < 0.05:
                 self.bumper_cmd.angular.z = 0
                 self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
