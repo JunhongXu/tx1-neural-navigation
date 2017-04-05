@@ -44,13 +44,13 @@ class DepthController(object):
             H, W = depth_img.shape
             # processing depth
             depth_img = np.nan_to_num(depth_img)
-            depth_img[depth_img > 10] = 2
+            depth_img[depth_img > 20] = 20
             depth_img[depth_img <= 0] = 0
             depth_img = depth_img[:H//10]
             info = np.zeros(2)
             for i in range(0, 2):
                 info[i] = np.mean(depth_img[:, i*W//2:(i+1)*W//2])
-            index = np.where(info<1.2)[0]
+            index = np.where(info<1)[0]
             if np.mean(info) < 0.5:
                 self.twist.linear.x = 0.5 - 0.5* np.max(info)
             else:
@@ -72,6 +72,9 @@ class DepthController(object):
             print(info)
         except CvBridgeError as error:
             print(error)
+
+    def reject_outliers(self, data):
+        return data[abs(data - np.mean(data)) < 2 * np.std(data)]
 
 
 if __name__ == '__main__':
