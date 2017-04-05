@@ -45,7 +45,7 @@ class Recorder(object):
             filename = 'data/%s.png' % timestamp
             # save image
             depth_img = np.nan_to_num(depth_img)
-            depth_img[depth_img > 20] = 0
+            depth_img[depth_img > 20] = 20
             depth_img[depth_img < 0] = 0
             # print(depth_img)
             print('LEFT', np.mean(depth_img[:, W//4]))
