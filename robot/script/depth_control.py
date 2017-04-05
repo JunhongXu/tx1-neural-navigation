@@ -50,6 +50,7 @@ class DepthController(object):
             info = np.zeros(2)
             for i in range(0, 2):
                 data = self.reject_outliers(depth_img[:, i*W//2:(i+1)*W//2])
+                data = np.nan_to_num(data)
                 info[i] = np.mean(data)
             index = np.where(info<1)[0]
             if np.mean(info) < 0.5:
