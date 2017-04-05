@@ -49,7 +49,8 @@ class DepthController(object):
             depth_img = depth_img[:H//10]
             info = np.zeros(2)
             for i in range(0, 2):
-                info[i] = np.mean(depth_img[:, i*W//2:(i+1)*W//2])
+                data = self.reject_outliers(depth_img[:, i*W//2:(i+1)*W//2])
+                info[i] = np.mean(data)
             index = np.where(info<1)[0]
             if np.mean(info) < 0.5:
                 self.twist.linear.x = 0.5 - 0.5* np.max(info)
