@@ -62,6 +62,7 @@ class DepthController(object):
                 info[i] = np.mean(data)
             print(info)
             print(sum_data/(H*W))
+            print(np.argmax(info))
             # processing depth
             # depth_img = np.nan_to_num(depth_img)
             # depth_img[depth_img > 5] = 0
