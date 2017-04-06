@@ -55,8 +55,9 @@ class DepthController(object):
             for i in range(0, 3):
                 data = depth_img[:, i*W//3:(i+1)*W//3]
                 data = self.reject_nan_inf(data)
-                sum_data += data.shape[0]
                 data = self.reject_outliers(data)
+                sum_data += data.shape[0]
+                # data = np.sort(data, kind='mergesort')[:]
                 info[i] = np.mean(data)
             print(info)
             print(sum_data/(H*W))
