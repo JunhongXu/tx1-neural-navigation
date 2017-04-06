@@ -30,6 +30,7 @@ class DepthController(object):
         rospy.init_node('r')
         self.bridge = CvBridge()
         self.twist = Twist()
+        self.division = 8
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
@@ -50,10 +51,10 @@ class DepthController(object):
             # print(depth_img)
             H, W = depth_img.shape
             print(H, W)
-            info = np.zeros(4)
+            info = np.zeros(self.division)
             sum_data = 0
-            for i in range(0, 4):
-                data = depth_img[:, i*W//4:(i+1)*W//4]
+            for i in range(0, self.division):
+                data = depth_img[:, i*W//self.division:(i+1)*W//self.division]
                 data = self.reject_nan_inf(data)
                 data = self.reject_outliers(data)
                 sum_data += data.shape[0]
