@@ -50,10 +50,10 @@ class DepthController(object):
             # print(depth_img)
             H, W = depth_img.shape
             print(H, W)
-            info = np.zeros(3)
+            info = np.zeros(4)
             sum_data = 0
-            for i in range(0, 3):
-                data = depth_img[:, i*W//3:(i+1)*W//3]
+            for i in range(0, 4):
+                data = depth_img[:, i*W//4:(i+1)*W//4]
                 data = self.reject_nan_inf(data)
                 data = self.reject_outliers(data)
                 sum_data += data.shape[0]
