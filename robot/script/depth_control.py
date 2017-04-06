@@ -46,7 +46,7 @@ class DepthController(object):
         try:
             depth = self.bridge.imgmsg_to_cv2(data)
             depth_img = np.array(depth, dtype=np.float32)
-            print(depth_img)
+            # print(depth_img)
             H, W = depth_img.shape
             print(H, W)
             info = np.zeros(3)
