@@ -37,46 +37,63 @@ class DepthController(object):
         # keeps the node alive
         rospy.spin()
 
+    def reject_nan_inf(self, data):
+        data[data==np.inf] = 20
+        data = data[~np.isnan(data)]
+        data = data[~np.isinf(data)]
+        return data
+
     def update_depth(self, data):
         try:
             depth = self.bridge.imgmsg_to_cv2(data)
             depth_img = np.array(depth, dtype=np.float32)
             H, W = depth_img.shape
-            # processing depth
-            depth_img = np.nan_to_num(depth_img)
-            depth_img[depth_img > 5] = 0
-            depth_img[depth_img <= 0] = 0
-            depth_img = depth_img[:H//10]
-            info = np.zeros(2)
-            for i in range(0, 2):
-                data = self.reject_outliers(depth_img[:, i*W//2:(i+1)*W//2])
-                data = np.nan_to_num(data)
+            print(H, W)
+            info = np.zeros(3)
+            sum_data = 0
+            for i in range(0, 3):
+                data = depth_img[:, i*W//3:(i+1)*W//3]
+                data = self.reject_nan_inf(data)
+                sum_data += data.shape[0]
+                data = self.reject_outliers(data)
                 info[i] = np.mean(data)
-            index = np.where(info<1)[0]
-            if np.mean(info) < 0.5:
-                self.twist.linear.x = 0.5 - 0.5* np.max(info)
-            else:
-                self.twist.linear.x = 0.5
-            if index.shape[0] != 0:
-                minimal_dist = np.argmin(info)
-                if minimal_dist == 0:
-                    self.twist.angular.z = 4.5 - 2*info[0]
-                    self.twist.angular.z = -self.twist.angular.z
-                else:
-                    self.twist.angular.z = 4.5 - 2*info[1]
-            else:
-                self.twist.angular.z = 0.0
-
-            self.pub.publish(self.twist)
-            self.move_pub.publish(self.twist)
-            print(index)
-            print(self.twist)
             print(info)
+            print(sum_data/(H*W))
+            # processing depth
+            # depth_img = np.nan_to_num(depth_img)
+            # depth_img[depth_img > 5] = 0
+            # depth_img[depth_img <= 0] = 0
+            # depth_img = depth_img[:H//10]
+            # info = np.zeros(2)
+            # for i in range(0, 2):
+            #     data = self.reject_outliers(depth_img[:, i*W//2:(i+1)*W//2])
+            #     data = np.nan_to_num(data)
+            #     info[i] = np.mean(data)
+            # index = np.where(info<1)[0]
+            # if np.mean(info) < 0.5:
+            #     self.twist.linear.x = 0.5 - 0.5* np.max(info)
+            # else:
+            #     self.twist.linear.x = 0.5
+            # if index.shape[0] != 0:
+            #     minimal_dist = np.argmin(info)
+            #     if minimal_dist == 0:
+            #         self.twist.angular.z = 4.5 - 2*info[0]
+            #         self.twist.angular.z = -self.twist.angular.z
+            #     else:
+            #         self.twist.angular.z = 4.5 - 2*info[1]
+            # else:
+            #     self.twist.angular.z = 0.0
+            #
+            # self.pub.publish(self.twist)
+            # self.move_pub.publish(self.twist)
+            # print(index)
+            # print(self.twist)
+            # print(info)
         except CvBridgeError as error:
             print(error)
 
     def reject_outliers(self, data):
-        return data[abs(data - np.mean(data)) < np.std(data)]
+        return data[abs(data - np.mean(data)) < 2* np.std(data)]
 
 
 if __name__ == '__main__':
