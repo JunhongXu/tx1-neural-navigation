@@ -50,7 +50,6 @@ class DepthController(object):
             depth_img = np.array(depth, dtype=np.float32)
             # print(depth_img)
             H, W = depth_img.shape
-            print(H, W)
             info = np.zeros(self.division)
             sum_data = 0
             for i in range(0, self.division):
@@ -67,7 +66,7 @@ class DepthController(object):
             # depth_img = self.reject_nan_inf(depth_img)
             # depth_img = self.reject_outliers(depth_img)
             # print('info std', np.std(info))
-            if np.any(info<1.0):
+            if np.any(info<1.2):
                 turn = np.argmin(info)
 
                 # turn to the right
