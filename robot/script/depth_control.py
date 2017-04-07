@@ -52,6 +52,7 @@ class DepthController(object):
             H, W = depth_img.shape
             info = np.zeros(self.division)
             sum_data = 0
+            depth_img = depth_img[:H/2]
             for i in range(0, self.division):
                 data = depth_img[:, i*W//self.division:(i+1)*W//self.division]
                 data = self.reject_nan_inf(data)
