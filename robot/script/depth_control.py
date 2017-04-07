@@ -66,7 +66,7 @@ class DepthController(object):
             # depth_img = self.reject_nan_inf(depth_img)
             # depth_img = self.reject_outliers(depth_img)
             # print('info std', np.std(info))
-            if np.any(info<1.2):
+            if np.any(info<1):
                 turn = np.argmin(info)
 
                 # turn to the right
