@@ -70,10 +70,10 @@ class DepthController(object):
                 turn = np.argmin(info)
 
                 # turn to the right
-                if turn == 0:
+                if 0 <= turn < 4:
                     self.twist.angular.z = 4.5 - 2*info[0]
                     self.twist.angular.z = -self.twist.angular.z
-                elif turn == self.division - 1:
+                else:
                     self.twist.angular.z = 4.5 - 2 * info[1]
             else:
                 self.twist.angular.z = 0.0
