@@ -60,14 +60,23 @@ class DepthController(object):
                 sum_data += data.shape[0]
                 # data = np.sort(data, kind='mergesort')[:]
                 info[i] = np.mean(data)
-            print(info)
-            print(sum_data/(H*W))
-            print(np.argmax(info))
+            # print(info)
+            # print(sum_data/(H*W))
+            # print(np.argmax(info))
             # check the standard deviation
-            depth_img = self.reject_nan_inf(depth_img)
+            # depth_img = self.reject_nan_inf(depth_img)
             # depth_img = self.reject_outliers(depth_img)
-            print('info std', np.std(info))
-            print('depth std', np.std(depth_img))
+            # print('info std', np.std(info))
+            if np.any(info<1.0):
+                turn = np.argmin(info)
+
+                # turn to the right
+                if turn == 0:
+                    self.twist.angular.z = 4.5 - 2*info[0]
+                    self.twist.angular.z = -self.twist.angular.z
+                else:
+                    self.twist.angular.z = 4.5 - 2 * info[1]
+            # print('depth std', np.std(depth_img))
             # processing depth
             # depth_img = np.nan_to_num(depth_img)
             # depth_img[depth_img > 5] = 0
@@ -93,8 +102,8 @@ class DepthController(object):
             # else:
             #     self.twist.angular.z = 0.0
             #
-            # self.pub.publish(self.twist)
-            # self.move_pub.publish(self.twist)
+            self.pub.publish(self.twist)
+            self.move_pub.publish(self.twist)
             # print(index)
             # print(self.twist)
             # print(info)
