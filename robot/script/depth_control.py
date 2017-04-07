@@ -76,6 +76,9 @@ class DepthController(object):
                     self.twist.angular.z = -self.twist.angular.z
                 else:
                     self.twist.angular.z = 4.5 - 2 * info[1]
+            else:
+                self.twist.angular.z = 0.0
+            self.twist.linear.x = 0.5
             # print('depth std', np.std(depth_img))
             # processing depth
             # depth_img = np.nan_to_num(depth_img)
