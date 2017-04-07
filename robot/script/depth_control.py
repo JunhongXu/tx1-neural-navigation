@@ -30,7 +30,7 @@ class DepthController(object):
         rospy.init_node('r')
         self.bridge = CvBridge()
         self.twist = Twist()
-        self.division = 8
+        self.division = 20
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
@@ -73,7 +73,7 @@ class DepthController(object):
                 if 0 <= turn < 4:
                     self.twist.angular.z = 4.5 - 2*info[0]
                     self.twist.angular.z = -self.twist.angular.z
-                else:
+                elif turn >= 16:
                     self.twist.angular.z = 4.5 - 2 * info[1]
             else:
                 self.twist.angular.z = 0.0
