@@ -65,7 +65,7 @@ class DepthController(object):
             print(np.argmax(info))
             # check the standard deviation
             depth_img = self.reject_nan_inf(depth_img)
-            depth_img = self.reject_outliers(depth_img)
+            # depth_img = self.reject_outliers(depth_img)
             print('info std', np.std(info))
             print('depth std', np.std(depth_img))
             # processing depth
