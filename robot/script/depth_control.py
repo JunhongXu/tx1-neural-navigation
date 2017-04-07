@@ -39,9 +39,9 @@ class DepthController(object):
         rospy.spin()
 
     def reject_nan_inf(self, data):
-        data = data[data<5.]
         data = data[~np.isnan(data)]
         data = data[~np.isinf(data)]
+        data = data[data<5.]
         return data
 
     def update_depth(self, data):
