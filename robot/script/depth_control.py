@@ -61,7 +61,7 @@ class DepthController(object):
                 # data = np.sort(data, kind='mergesort')[:]
                 info[i] = np.mean(data)
             print(info)
-            # print(sum_data/(H*W))
+            print(sum_data/(H*W))
             print(np.argmax(info))
             # check the standard deviation
             depth_img = self.reject_nan_inf(depth_img)
