@@ -71,12 +71,20 @@ class DepthController(object):
 
                 # turn to the right
                 if 0 <= turn < 2:
-                    self.twist.angular.z = 4.5 - info[0]
+                    self.twist.angular.z = 4.5 - 2 * info[0]
                     self.twist.angular.z = -self.twist.angular.z
                 elif turn >= 4:
-                    self.twist.angular.z = 4.5 - info[-1]
+                    self.twist.angular.z = 4.5 - 2 * info[-1]
+            elif np.any(info[2:4]<2.5):
+                # compare left and right
+                if np.mean(info[:2]) > np.mean(info[4:]):
+                    self.twist.angular.z = -1.0
+                else:
+                    self.twist.angular.z = 1.0
             else:
                 self.twist.angular.z = 0.0
+
+
             self.twist.linear.x = 0.5
             # print('depth std', np.std(depth_img))
             # processing depth
