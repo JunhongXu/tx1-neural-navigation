@@ -35,14 +35,12 @@ class DepthController(object):
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
-
         # keeps the node alive
         rospy.spin()
 
     def reject_nan_inf(self, data):
         data = data[~np.isnan(data)]
         data = data[~np.isinf(data)]
-        data = data[data<5.]
         return data
 
     def update_depth(self, data):
@@ -51,79 +49,53 @@ class DepthController(object):
             depth_img = np.array(depth, dtype=np.float32)
             # print(depth_img)
             H, W = depth_img.shape
-            info = np.zeros(self.division)
-            sum_data = 0
-            whole_mean = np.mean(self.reject_nan_inf(depth_img))
-            for i in range(0, self.division):
-                data = depth_img[:, i*W//self.division:(i+1)*W//self.division]
-                data = self.reject_nan_inf(data)
-                data = self.reject_outliers(data)
-                sum_data += data.shape[0]
-                # data = np.sort(data, kind='mergesort')[:]
-                info[i] = np.mean(data)
-            print(np.min(info[0:2]), np.min(info[-2:-1]))
-            print(whole_mean)
-            # print(sum_data/(H*W))
-            # print(np.argmax(info))
-            # check the standard deviation
-            # depth_img = self.reject_nan_inf(depth_img)
-            # depth_img = self.reject_outliers(depth_img)
-            # print('info std', np.std(info))
-            if np.mean(info[2:4]) < 1.0:
-                self.twist.linear.x = 0.0
-                print('[!]Stop')
-
-            if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.6:
-                self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[0]/whole_mean)
-                self.twist.angular.z = -self.twist.angular.z
-                print('Turn right')
-            elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.6:
-                self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[-1]/whole_mean)
-                print('Turn left')
-            elif np.any(info[2:4]/whole_mean<0.8):
-                # compare left and right
-                if np.min(info[0:2]) > np.min(info[-2:-1]):
-                    self.twist.angular.z = 2.5
-                    print('[!!]Turn left')
-                else:
-                    self.twist.angular.z = -2.5
-                    print('[!!]Turn right')
-            else:
-                self.twist.angular.z = 0.0
-
-
-            self.twist.linear.x = 0.5
-            # print('depth std', np.std(depth_img))
-            # processing depth
-            # depth_img = np.nan_to_num(depth_img)
-            # depth_img[depth_img > 5] = 0
-            # depth_img[depth_img <= 0] = 0
-            # depth_img = depth_img[:H//10]
-            # info = np.zeros(2)
-            # for i in range(0, 2):
-            #     data = self.reject_outliers(depth_img[:, i*W//2:(i+1)*W//2])
-            #     data = np.nan_to_num(data)
+            left_win = depth_img[:, :W//3]
+            left_win = self.reject_nan_inf(left_win)
+            center_win = self.reject_nan_inf(depth_img[:, W//3:2*W//3])
+            right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
+            if center_win[center_win<=1.0].shape[0]/center_win.shape[0] > 0.5:
+                print('Danger')
+                if left_win[left_win<=1.0].shape[0]/left_win.shape[0] > 0.5:
+                    print('Turn right')
+                    self.twist.angular.z = -3.0
+                elif right_win[right_win<=1.0].shape[0]/right_win.shape[0] > 0.5:
+                    print('Turn left')
+                    self.twist.angular.z = 3.0
+            # info = np.zeros(self.division)
+            # sum_data = 0
+            # whole_mean = np.mean(self.reject_nan_inf(depth_img))
+            # for i in range(0, self.division):
+            #     data = depth_img[:, i*W//self.division:(i+1)*W//self.division]
+            #     data = self.reject_nan_inf(data)
+            #     data = self.reject_outliers(data)
+            #     sum_data += data.shape[0]
+            #     # data = np.sort(data, kind='mergesort')[:]
             #     info[i] = np.mean(data)
-            # index = np.where(info<1)[0]
-            # if np.mean(info) < 0.5:
-            #     self.twist.linear.x = 0.5 - 0.5* np.max(info)
-            # else:
-            #     self.twist.linear.x = 0.5
-            # if index.shape[0] != 0:
-            #     minimal_dist = np.argmin(info)
-            #     if minimal_dist == 0:
-            #         self.twist.angular.z = 4.5 - 2*info[0]
-            #         self.twist.angular.z = -self.twist.angular.z
+            # if np.mean(info[2:4]) < 1.0:
+            #     self.twist.linear.x = 0.0
+            #     print('[!]Stop')
+            #
+            # if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.6:
+            #     self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[0]/whole_mean)
+            #     self.twist.angular.z = -self.twist.angular.z
+            #     print('Turn right')
+            # elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.6:
+            #     self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[-1]/whole_mean)
+            #     print('Turn left')
+            # elif np.any(info[2:4]/whole_mean<0.8):
+            #     # compare left and right
+            #     if np.min(info[0:2]) > np.min(info[-2:-1]):
+            #         self.twist.angular.z = 2.5
+            #         print('[!!]Turn left')
             #     else:
-            #         self.twist.angular.z = 4.5 - 2*info[1]
+            #         self.twist.angular.z = -2.5
+            #         print('[!!]Turn right')
             # else:
             #     self.twist.angular.z = 0.0
-            #
+
+            self.twist.linear.x = 0.5
             self.pub.publish(self.twist)
             self.move_pub.publish(self.twist)
-            # print(index)
-            # print(self.twist)
-            # print(info)
         except CvBridgeError as error:
             print(error)
 

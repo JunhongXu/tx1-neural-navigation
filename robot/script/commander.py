@@ -28,8 +28,10 @@ class Commander(object):
         self.joycmd = Twist()
         self.nn_cmd = Twist()
         self.bumper_cmd = Twist()
+        self.depth_cmd = Twist()
         # mode
         self.neuralnet_mode = False
+        self.depth_mod = False
         self.ps3 = PS3()
 
         self.desired_euler = 0
@@ -47,6 +49,7 @@ class Commander(object):
         rospy.Subscriber('/neural_cmd', Twist, self.neural_cmd, queue_size=5)
         rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/odom', Odometry, self.update_odom)
+        rospy.Subscriber('/depth_control', Twist, self.depth_cmd, queue_size=5)
         # publisher
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=1)
@@ -86,7 +89,7 @@ class Commander(object):
             rospy.loginfo('[!]Bumper')
 
         if not self.is_avoid:
-            if np.abs(self.curr_x - self.prev_x) < 0.05:
+            if np.abs(self.curr_x - self.prev_x) < 0.01:
                 self.bumper_cmd.angular.z = 0
                 self.bumper_cmd.linear.x = -0.5
                 self.curr_x = position
@@ -111,6 +114,9 @@ class Commander(object):
             self.curr_x = self.prev_x = position
         self.reset_pub.publish(Bool(self.is_avoid))
 
+    def depth_cmd(self, data):
+        self.depth_cmd = data
+
     def joystick_cmd(self, cmd):
         """joystick command, -0.5<=linear.x<=0.5; -4.25<=auglar.z<=4.25"""
         self.ps3.update(cmd)
@@ -126,6 +132,9 @@ class Commander(object):
                 rospy.loginfo('[*]Neural network controlling...')
             else:
                 rospy.loginfo('[*]Human controlling...')
+        elif 'R1_pressed' in btn_events:
+            self.depth_mod = not self.depth_mod
+            rospy.loginfo('[*]Depth Controller')
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd
@@ -134,6 +143,8 @@ class Commander(object):
         # rospy.loginfo(self.is_avoid)
         if self.neuralnet_mode and self.is_avoid:
             self.move_pub.publish(self.nn_cmd)
+        elif self.depth_mod and self.is_avoid:
+            self.move_pub.publish(self.depth_cmd)
         elif not self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
         else:

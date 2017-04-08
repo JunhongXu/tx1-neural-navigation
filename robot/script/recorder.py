@@ -41,6 +41,7 @@ class Recorder(object):
         self.safety_record = False
         self.safe = True
         self.twist = Twist()
+        self.depth_twist = Twist()
         self.avoided = True
         self.num_crashes = 0
         self.num_frames = 0
@@ -48,7 +49,7 @@ class Recorder(object):
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
         # depth
-        rospy.Subscriber('/zed/depth/depth_registered', Image, self.save_depth)
+        # rospy.Subscriber('/zed/depth/depth_registered', Image, self.save_depth)
         # cmd_vel
         rospy.Subscriber('/cmd_vel', Twist, self.get_twist)
         # odom
@@ -59,6 +60,8 @@ class Recorder(object):
         rospy.Subscriber('/safety', Bool, self.update_safety)
 
         rospy.Subscriber('/reset', Bool, self.reset)
+
+        rospy.Subscriber('/depth_control', self.update_depth_control)
 
         rospy.init_node('recorder')
 
@@ -84,6 +87,8 @@ class Recorder(object):
             with open('../frames.csv', 'a') as f:
                 f.write('\n{}'.format(frames))
 
+    def update_depth_control(self, data):
+        self.depth_twist = data
 
     # TODO: Get odometry data
     def save_odom(self, odom):
@@ -112,8 +117,13 @@ class Recorder(object):
             # only record non-zero data
             if self.twist is not None:
                 timestamp = data.header.stamp
-                v = twist.linear.x
-                r = twist.angular.z
+                if not self.safe and not self.primary_record:
+                    self.num_frames += 1
+                    v = self.depth_twist.linear.x
+                    r = self.depth_twist.angular.y
+                else:
+                    v = twist.linear.x
+                    r = twist.angular.z
                 with self.twist_lock:
                     if type == 'depth':
                         filename = self.SAFETY_DEPTH_PATH if self.safety_record else self.DEPTH_PATH
@@ -166,7 +176,6 @@ class Recorder(object):
 
     def update_safety(self, data):
         self.safe = data.data
-
 
 if __name__ == '__main__':
     try:
