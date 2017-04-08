@@ -53,16 +53,19 @@ class DepthController(object):
             left_win = self.reject_nan_inf(left_win)
             center_win = self.reject_nan_inf(depth_img[:, W//3:2*W//3])
             right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
-            if center_win[center_win<=1.0].shape[0]/center_win.shape[0] > 0.3:
+            if center_win[center_win<=1.2].shape[0]/center_win.shape[0] > 0.2:
                 print('Danger')
-                if left_win[left_win<=1.0].shape[0]/left_win.shape[0] > 0.3:
+                if left_win[left_win<=1.2].shape[0]/left_win.shape[0] > 0.2:
                     print('Turn right')
                     self.twist.angular.z = -3.0
-                elif right_win[right_win<=1.0].shape[0]/right_win.shape[0] > 0.3:
+                elif right_win[right_win<=1.2].shape[0]/right_win.shape[0] > 0.2:
                     print('Turn left')
                     self.twist.angular.z = 3.0
             else:
                 self.twist.angular.z = 0.0
+            print('LEFT, %s ' % (left_win[left_win<=1.2].shape[0]/left_win.shape[0]))
+            print('RIGHT, %s ' % (right_win[right_win<=1.2].shape[0]/right_win.shape[0]))
+            print('CENTER %s' % (center_win[center_win<=1.2].shape[0]/center_win.shape[0]))
             # info = np.zeros(self.division)
             # sum_data = 0
             # whole_mean = np.mean(self.reject_nan_inf(depth_img))
