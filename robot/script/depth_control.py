@@ -72,11 +72,11 @@ class DepthController(object):
                 self.twist.linear.x = 0.0
                 print('[!]Stop')
 
-            if info[0]/whole_mean < 0.5:
-                self.twist.angular.z = 4.5 - 2 * info[0]
+            if info[0]/whole_mean < 0.7:
+                self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[0])
                 self.twist.angular.z = -self.twist.angular.z
-            elif info[-1]/whole_mean < 0.5:
-                self.twist.angular.z = 4.5 - 2 * info[-1]
+            elif info[-1]/whole_mean < 0.7:
+                self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[-1])
             elif np.any(info[1:2]/whole_mean<1.5):
                 # compare left and right
                 if info[0] > info[-1]:
@@ -124,6 +124,10 @@ class DepthController(object):
 
     def reject_outliers(self, data):
         return data[abs(data - np.mean(data)) < 2* np.std(data)]
+
+
+    def sigmoid(self, data):
+        return 1/ (1+np.exp(-data))
 
 
 if __name__ == '__main__':
