@@ -69,12 +69,12 @@ class DepthController(object):
             # depth_img = self.reject_outliers(depth_img)
             # print('info std', np.std(info))
 
-            if np.mean(info[:2])/whole_mean < 0.8 * np.mean(info[4:6]):
+            if np.mean(info[:2])/whole_mean < 0.8 * np.mean(info[4:6])/whole_mean:
                 self.twist.angular.z = 4.5 - 2 * info[0]
                 self.twist.angular.z = -self.twist.angular.z
             elif np.mean(info[4:6])/whole_mean < np.mean(info[:2])/whole_mean * 0.8:
                 self.twist.angular.z = 4.5 - 2 * info[-1]
-            elif np.any(info[2:4]/whole_mean<2.5):
+            elif np.any(info[2:4]/whole_mean<1.5):
                 # compare left and right
                 if np.mean(info[:2]) > np.mean(info[4:]):
                     self.twist.angular.z = 2.5
