@@ -58,19 +58,19 @@ class DepthController(object):
             right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
             if self.count(center_win) >= 0.3:
                 print('Danger')
-                if self.count(left_win) < self.count(right_win):
-                    print('Turn left')
-                    self.twist.angular.z = 2.0
-                elif self.count(right_win) >= self.count(left_win):
+                if np.sum(left_win) < np.sum(right_win):
                     print('Turn right')
                     self.twist.angular.z = -2.0
+                elif np.sum(left_win) >= self.count(right_win):
+                    print('Turn left')
+                    self.twist.angular.z = 2.0
             # for checking edge
             elif self.count(left_win) > 0.2 or self.count(right_win) >= 0.2:
-                if self.count(left_win) >= self.count(right_win):
-                    print('Turn right-edge')
+                if np.sum(left_win) < np.sum(right_win):
+                    print('Turn right')
                     self.twist.angular.z = -2.0
-                elif self.count(right_win) > self.count(left_win):
-                    print('Turn left-edge')
+                elif np.sum(left_win) >= self.count(right_win):
+                    print('Turn left')
                     self.twist.angular.z = 2.0
             else:
                 self.twist.angular.z = 0.0
