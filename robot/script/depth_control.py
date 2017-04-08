@@ -30,7 +30,7 @@ class DepthController(object):
         rospy.init_node('r')
         self.bridge = CvBridge()
         self.twist = Twist()
-        self.division = 8
+        self.division = 6
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
