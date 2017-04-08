@@ -60,7 +60,7 @@ class DepthController(object):
                 sum_data += data.shape[0]
                 # data = np.sort(data, kind='mergesort')[:]
                 info[i] = np.mean(data)
-            print(info)
+            print(np.min(info[0:2]), np.min(info[-2:-1]))
             print(whole_mean)
             # print(sum_data/(H*W))
             # print(np.argmax(info))
