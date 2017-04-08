@@ -56,7 +56,7 @@ class DepthController(object):
             left_win = self.reject_nan_inf(left_win)
             center_win = self.reject_nan_inf(depth_img[:, W//3:2*W//3])
             right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
-            if self.count(center_win) >= 0.2:
+            if self.count(center_win) >= 0.3:
                 print('Danger')
                 if self.count(left_win) < self.count(right_win):
                     print('Turn left')
