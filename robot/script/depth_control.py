@@ -72,10 +72,10 @@ class DepthController(object):
                 self.twist.linear.x = 0.0
                 print('[!]Stop')
 
-            if np.mean(info[:2])/whole_mean < 0.8:
+            if np.mean(info[:2])/whole_mean < 0.5:
                 self.twist.angular.z = 4.5 - 2 * info[0]
                 self.twist.angular.z = -self.twist.angular.z
-            elif np.mean(info[4:6])/whole_mean < 0.8:
+            elif np.mean(info[4:6])/whole_mean < 0.5:
                 self.twist.angular.z = 4.5 - 2 * info[-1]
             elif np.any(info[2:4]/whole_mean<1.5):
                 # compare left and right
