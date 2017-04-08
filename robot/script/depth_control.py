@@ -43,7 +43,7 @@ class DepthController(object):
         data = data[~np.isinf(data)]
         return data
 
-    def count(self, data, dist=1.2):
+    def count(self, data, dist=0.9):
         return data[data<=dist].shape[0]/data.shape[0]
 
     def update_depth(self, data):
@@ -65,10 +65,10 @@ class DepthController(object):
                     print('Turn left')
                     self.twist.angular.z = 3.0
             # for checking edge
-            elif self.count(left_win) >=0.5:
+            elif self.count(left_win) >=0.3:
                 print('Turn right-edge')
                 self.twist.angular.z = -3.0
-            elif self.count(right_win) >= 0.5:
+            elif self.count(right_win) >= 0.3:
                 print('Turn left-edge')
                 self.twist.angular.z = 3.0
             else:
