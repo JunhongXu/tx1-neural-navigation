@@ -30,7 +30,7 @@ class DepthController(object):
         rospy.init_node('r')
         self.bridge = CvBridge()
         self.twist = Twist()
-        self.division = 4
+        self.division = 8
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
@@ -68,16 +68,16 @@ class DepthController(object):
             # depth_img = self.reject_nan_inf(depth_img)
             # depth_img = self.reject_outliers(depth_img)
             # print('info std', np.std(info))
-            if np.mean(info[1:2]) < 1.0:
+            if np.mean(info[4:6]) < 1.0:
                 self.twist.linear.x = 0.0
                 print('[!]Stop')
 
-            if info[0]/info[-1] < 0.8:
+            if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.6:
                 self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[0]/whole_mean)
                 self.twist.angular.z = -self.twist.angular.z
-            elif info[-1]/info[0] < 0.8:
+            elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.6:
                 self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[-1]/whole_mean)
-            elif np.any(info[1:2]/whole_mean<1.5):
+            elif np.any(info[2:4]/whole_mean<1.0):
                 # compare left and right
                 if info[0] > info[-1]:
                     self.twist.angular.z = 2.5
