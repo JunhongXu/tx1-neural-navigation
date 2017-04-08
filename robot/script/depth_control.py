@@ -31,12 +31,17 @@ class DepthController(object):
         self.bridge = CvBridge()
         self.twist = Twist()
         self.division = 16
-        # depth
-        rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        # depth
+        rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
+        rospy.Subscriber('/bumper', Bumper, self.reset)
+
         # keeps the node alive
         rospy.spin()
+
+    def reset(self, data):
+        print(data)
 
     def reject_nan_inf(self, data):
         data = data[~np.isnan(data)]
@@ -118,8 +123,8 @@ class DepthController(object):
             # else:
             #     self.twist.angular.z = 0.0
             #
-            self.pub.publish(self.twist)
-            self.move_pub.publish(self.twist)
+            # self.pub.publish(self.twist)
+            # self.move_pub.publish(self.twist)
             # print(index)
             # print(self.twist)
             # print(info)
