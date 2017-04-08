@@ -73,20 +73,20 @@ class DepthController(object):
                 self.twist.linear.x = 0.0
                 print('[!]Stop')
 
-            if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.5:
-                self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[0]/whole_mean)
+            if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.6:
+                self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[0]/whole_mean)
                 self.twist.angular.z = -self.twist.angular.z
                 print('Turn right')
-            elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.5:
-                self.twist.angular.z = 4.5 - 4.5 * self.sigmoid(info[-1]/whole_mean)
+            elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.6:
+                self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[-1]/whole_mean)
                 print('Turn left')
             elif np.any(info[2:4]/whole_mean<1.0):
                 # compare left and right
                 if info[0] > info[-1]:
-                    self.twist.angular.z = 1.5
+                    self.twist.angular.z = 2.5
                     print('[!!]Turn left')
                 else:
-                    self.twist.angular.z = -1.5
+                    self.twist.angular.z = -2.5
                     print('[!!]Turn right')
             else:
                 self.twist.angular.z = 0.0
