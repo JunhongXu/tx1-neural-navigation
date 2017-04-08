@@ -43,7 +43,7 @@ class DepthController(object):
         data = data[~np.isinf(data)]
         return data
 
-    def count(self, data, dist=0.9):
+    def count(self, data, dist=1.5):
         return data[data<=dist].shape[0]/data.shape[0]
 
     def update_depth(self, data):
