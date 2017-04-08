@@ -60,18 +60,18 @@ class DepthController(object):
                 print('Danger')
                 if self.count(left_win) < self.count(right_win):
                     print('Turn left')
-                    self.twist.angular.z = 3.0
+                    self.twist.angular.z = 2.0
                 elif self.count(right_win) >= self.count(left_win):
                     print('Turn right')
-                    self.twist.angular.z = -3.0
+                    self.twist.angular.z = -2.0
             # for checking edge
             elif self.count(left_win) >= 0.2 or self.count(right_win) >= 0.2:
                 if self.count(left_win) >= self.count(right_win):
                     print('Turn right-edge')
-                    self.twist.angular.z = -3.0
+                    self.twist.angular.z = -2.0
                 elif self.count(right_win) >= self.count(left_win):
                     print('Turn left-edge')
-                    self.twist.angular.z = 3.0
+                    self.twist.angular.z = 2.0
             else:
                 self.twist.angular.z = 0.0
             print('LEFT, %s ' % (left_win[left_win<=1.2].shape[0]/left_win.shape[0]))
