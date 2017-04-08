@@ -65,10 +65,10 @@ class DepthController(object):
                     print('Turn left')
                     self.twist.angular.z = 3.0
             # for checking edge
-            elif self.count(left_win) >=0.3:
+            elif self.count(left_win) >= self.count(right_win) and self.count(left_win)>=0.3:
                 print('Turn right-edge')
                 self.twist.angular.z = -3.0
-            elif self.count(right_win) >= 0.3:
+            elif self.count(right_win) >= self.count(left_win) and self.count(right_win) >= 0.3:
                 print('Turn left-edge')
                 self.twist.angular.z = 3.0
             else:
