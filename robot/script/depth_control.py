@@ -43,6 +43,9 @@ class DepthController(object):
         data = data[~np.isinf(data)]
         return data
 
+    def count(self, data, dist=1.2):
+        return data[data<=dist].shape[0]/data.shape[0]
+
     def update_depth(self, data):
         try:
             depth = self.bridge.imgmsg_to_cv2(data)
@@ -53,14 +56,21 @@ class DepthController(object):
             left_win = self.reject_nan_inf(left_win)
             center_win = self.reject_nan_inf(depth_img[:, W//3:2*W//3])
             right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
-            if center_win[center_win<=1.2].shape[0]/center_win.shape[0] > 0.2:
+            if self.count(center_win) >= 0.2:
                 print('Danger')
-                if left_win[left_win<=1.2].shape[0]/left_win.shape[0] > 0.2:
+                if self.count(left_win) >= 0.2:
                     print('Turn right')
                     self.twist.angular.z = -3.0
-                elif right_win[right_win<=1.2].shape[0]/right_win.shape[0] > 0.2:
+                elif self.count(right_win) >= 0.2:
                     print('Turn left')
                     self.twist.angular.z = 3.0
+            # for checking edge
+            elif self.count(left_win) >=0.5:
+                print('Turn right-edge')
+                self.twist.angular.z = -3.0
+            elif self.count(right_win) >= 0.5:
+                print('Turn left-edge')
+                self.twist.angular.z = 3.0
             else:
                 self.twist.angular.z = 0.0
             print('LEFT, %s ' % (left_win[left_win<=1.2].shape[0]/left_win.shape[0]))
