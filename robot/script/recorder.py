@@ -61,7 +61,7 @@ class Recorder(object):
 
         rospy.Subscriber('/reset', Bool, self.reset)
 
-        rospy.Subscriber('/depth_control', self.update_depth_control)
+        rospy.Subscriber('/depth_control', Twist, self.update_depth_control)
 
         rospy.init_node('recorder')
 
