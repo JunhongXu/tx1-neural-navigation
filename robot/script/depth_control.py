@@ -67,43 +67,10 @@ class DepthController(object):
                 elif np.sum(left_win) >= np.sum(right_win):
                     self.twist.angular.z = 4.5*self.count(right_win)
             else:
-                copyright()
                 self.twist.angular.z = 0.0
-            # info = np.zeros(self.division)
-            # sum_data = 0
-            # whole_mean = np.mean(self.reject_nan_inf(depth_img))
-            # for i in range(0, self.division):
-            #     data = depth_img[:, i*W//self.division:(i+1)*W//self.division]
-            #     data = self.reject_nan_inf(data)
-            #     data = self.reject_outliers(data)
-            #     sum_data += data.shape[0]
-            #     # data = np.sort(data, kind='mergesort')[:]
-            #     info[i] = np.mean(data)
-            # if np.mean(info[2:4]) < 1.0:
-            #     self.twist.linear.x = 0.0
-            #     print('[!]Stop')
-            #
-            # if np.mean(info[0:2])/np.mean(info[-2:-1]) < 0.6:
-            #     self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[0]/whole_mean)
-            #     self.twist.angular.z = -self.twist.angular.z
-            #     print('Turn right')
-            # elif np.mean(info[-2:-1])/np.mean(info[0:2]) < 0.6:
-            #     self.twist.angular.z = 4.5 - 2 * self.sigmoid(info[-1]/whole_mean)
-            #     print('Turn left')
-            # elif np.any(info[2:4]/whole_mean<0.8):
-            #     # compare left and right
-            #     if np.min(info[0:2]) > np.min(info[-2:-1]):
-            #         self.twist.angular.z = 2.5
-            #         print('[!!]Turn left')
-            #     else:
-            #         self.twist.angular.z = -2.5
-            #         print('[!!]Turn right')
-            # else:
-            #     self.twist.angular.z = 0.0
 
             self.twist.linear.x = 0.5
             self.pub.publish(self.twist)
-            # self.move_pub.publish(self.twist)
         except CvBridgeError as error:
             print(error)
         except ZeroDivisionError as error:
