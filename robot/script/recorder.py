@@ -94,7 +94,7 @@ class Recorder(object):
                     print(v, r)
                     filename = self.RGB_PATH
                     filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
-                    cv2.imwrite(img, filename)
+                    cv2.imwrite(filename, img)
 
     def shutdown(self):
         crashes = '{}, {}'.format(self.train_iter, self.num_crashes)
