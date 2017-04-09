@@ -59,14 +59,15 @@ class DepthController(object):
                 if np.sum(left_win) < np.sum(right_win):
                     self.twist.angular.z = -4.5*self.count(left_win)
                 elif np.sum(left_win) >= np.sum(right_win):
-                    self.twist.angular.z = 4.5*self.count(left_win)
+                    self.twist.angular.z = 4.5*self.count(right_win)
             # for checking edge
             elif self.count(left_win) > 0.2 or self.count(right_win) >= 0.2:
                 if np.sum(left_win) < np.sum(right_win):
                     self.twist.angular.z = -4.5*self.count(left_win)
                 elif np.sum(left_win) >= np.sum(right_win):
-                    self.twist.angular.z = 4.5*self.count(left_win)
+                    self.twist.angular.z = 4.5*self.count(right_win)
             else:
+                copyright()
                 self.twist.angular.z = 0.0
             # info = np.zeros(self.division)
             # sum_data = 0
