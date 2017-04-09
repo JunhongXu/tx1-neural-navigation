@@ -158,6 +158,7 @@ class Commander(object):
             self.move_pub.publish(self.nn_cmd)
         elif self.depth_mod and self.is_avoid:
             self.move_pub.publish(self.depth_cmd)
+            print(self.depth_cmd)
         elif not self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
         else:
