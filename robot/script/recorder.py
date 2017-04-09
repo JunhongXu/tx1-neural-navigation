@@ -170,7 +170,7 @@ class Recorder(object):
     def save_rgb(self, rgb):
         if self.primary_record:
             self.total_frame += 1
-        if self.safety_record or self.primary_record or (not self.safe and self.avoided):
+        if self.safety_record or self.primary_record:
             self.record_img(rgb, 'rgb', self.twist)
         elif not self.safe and self.avoided:
             self.num_frames += 1
