@@ -30,6 +30,7 @@ class Commander(object):
         self.bumper_cmd = Twist()
         self.depth_cmd = Twist()
         # mode
+        self.human_mode = True
         self.neuralnet_mode = False
         self.depth_mod = False
         self.ps3 = PS3()
@@ -129,12 +130,24 @@ class Commander(object):
         if 'R2_pressed' in btn_events:
             self.neuralnet_mode = not self.neuralnet_mode
             if self.neuralnet_mode:
+                self.human_mode = False
+                self.depth_mod = False
                 rospy.loginfo('[*]Neural network controlling...')
             else:
+                self.human_mode = True
+                self.depth_mod = False
                 rospy.loginfo('[*]Human controlling...')
+
         elif 'R1_pressed' in btn_events:
             self.depth_mod = not self.depth_mod
-            rospy.loginfo('[*]Depth Controller')
+            if self.depth_mod:
+                self.human_mode = False
+                self.neuralnet_mode = False
+                rospy.loginfo('[*]Depth Controller')
+            else:
+                self.human_mode = True
+                self.neuralnet_mode = False
+                rospy.loginfo('[*]Stop depth controller')
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd
