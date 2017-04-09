@@ -163,11 +163,14 @@ class Recorder(object):
                     filename = self.SAFETY_RGB_PATH if self.safety_record else self.RGB_PATH
                 filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
                 # save image
-                cv2.imwrite(filename, image)
+                if type == 'rgb':
+                    cv2.imwrite(filename, image)
         except CvBridgeError as error:
             print(error)
 
     def save_rgb(self, rgb):
+        # for bumper
+        self.record_img(rgb, 'bumper', self.depth_twist)
         if self.primary_record:
             self.total_frame += 1
         if self.safety_record or self.primary_record:
