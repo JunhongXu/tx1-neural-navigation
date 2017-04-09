@@ -57,15 +57,15 @@ class DepthController(object):
             right_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, 2*W//3:]))
             if self.count(center_win) >= 0.3:
                 if np.sum(left_win) < np.sum(right_win):
-                    self.twist.angular.z = -2.0
-                elif np.sum(left_win) >= self.count(right_win):
-                    self.twist.angular.z = 2.0
+                    self.twist.angular.z = -4.5*self.count(left_win)
+                elif np.sum(left_win) >= np.sum(right_win):
+                    self.twist.angular.z = 4.5*self.count(left_win)
             # for checking edge
             elif self.count(left_win) > 0.2 or self.count(right_win) >= 0.2:
                 if np.sum(left_win) < np.sum(right_win):
-                    self.twist.angular.z = -2.0
-                elif np.sum(left_win) >= self.count(right_win):
-                    self.twist.angular.z = 2.0
+                    self.twist.angular.z = -4.5*self.count(left_win)
+                elif np.sum(left_win) >= np.sum(right_win):
+                    self.twist.angular.z = 4.5*self.count(left_win)
             else:
                 self.twist.angular.z = 0.0
             # info = np.zeros(self.division)

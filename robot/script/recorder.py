@@ -35,7 +35,7 @@ class Recorder(object):
         self.DEPTH_PATH = '../primary/DEPTH_DATA/%s' % train_iter
         self.RGB_PATH = '../primary/RGB_DATA/%s' % train_iter
         self.create_folders()
-        self.twist_lock = Lock()
+        # self.twist_lock = Lock()
         self.controller = PS3()
         self.primary_record = False
         self.safety_record = False
@@ -89,6 +89,7 @@ class Recorder(object):
 
     def update_depth_control(self, data):
         self.depth_twist = data
+        rospy.loginfo(self.depth_twist)
 
     # TODO: Get odometry data
     def save_odom(self, odom):
@@ -125,12 +126,12 @@ class Recorder(object):
                 else:
                     v = twist.linear.x
                     r = twist.angular.z
-                with self.twist_lock:
-                    if type == 'depth':
-                        filename = self.SAFETY_DEPTH_PATH if self.safety_record else self.DEPTH_PATH
-                    else:
-                        filename = self.SAFETY_RGB_PATH if self.safety_record else self.RGB_PATH
-                    filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
+                # with self.twist_lock:
+                if type == 'depth':
+                    filename = self.SAFETY_DEPTH_PATH if self.safety_record else self.DEPTH_PATH
+                else:
+                    filename = self.SAFETY_RGB_PATH if self.safety_record else self.RGB_PATH
+                filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
                 image = cv2.resize(image, (256, 256))
                 # save image
                 cv2.imwrite(filename, image)
@@ -147,8 +148,8 @@ class Recorder(object):
             self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
-        with self.twist_lock:
-            self.twist = twist
+        # with self.twist_lock:
+        self.twist = twist
 
     def get_status(self, joy_cmd):
         self.controller.update(joy_cmd)
