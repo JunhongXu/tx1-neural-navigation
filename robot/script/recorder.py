@@ -174,7 +174,6 @@ class Recorder(object):
             self.record_img(rgb, 'rgb', self.twist)
         elif not self.safe and self.avoided:
             self.num_frames += 1
-            print(self.depth_twist.linear.x, self.depth_twist.angular.z)
             self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
