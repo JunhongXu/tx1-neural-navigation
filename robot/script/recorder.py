@@ -86,6 +86,7 @@ class Recorder(object):
     def bumper(self, data):
         if data.is_left_pressed or data.is_right_pressed:
             # store images
+            self.num_crashes += 1
             rospy.loginfo('[*]Saving bumper images')
             with self.bumper_lock:
                 for timestamp, control, img in self.stored_data:
@@ -171,8 +172,7 @@ class Recorder(object):
     def save_rgb(self, rgb):
         # for bumper
         self.record_img(rgb, 'bumper', self.depth_twist)
-        if self.primary_record:
-            self.total_frame += 1
+        self.total_frame += 1
         if self.safety_record or self.primary_record:
             self.record_img(rgb, 'rgb', self.twist)
         elif not self.safe and self.avoided:
