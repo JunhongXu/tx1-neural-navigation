@@ -89,7 +89,7 @@ class Recorder(object):
 
     def update_depth_control(self, data):
         self.depth_twist = data
-        rospy.loginfo(self.depth_twist)
+        rospy.loginfo('DEPTH', self.depth_twist)
 
     # TODO: Get odometry data
     def save_odom(self, odom):
