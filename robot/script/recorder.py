@@ -91,6 +91,7 @@ class Recorder(object):
                 for timestamp, control, img in self.stored_data:
                     v = control.linear.x
                     r = control.angular.z
+                    print(v, r)
                     filename = self.RGB_PATH
                     filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
                     cv2.imwrite(img, filename)
@@ -173,6 +174,7 @@ class Recorder(object):
             self.record_img(rgb, 'rgb', self.twist)
         elif not self.safe and self.avoided:
             self.num_frames += 1
+            rospy.loginfo(self.depth_twist.linear.x, self.depth_twist.angular.z)
             self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
