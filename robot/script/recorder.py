@@ -121,6 +121,7 @@ class Recorder(object):
                     self.num_frames += 1
                     v = self.depth_twist.linear.x
                     r = self.depth_twist.angular.y
+                    rospy.loginfo('[!]DEPTH POLICY SPEED %s, %s' % (v, r))
                 else:
                     v = twist.linear.x
                     r = twist.angular.z
