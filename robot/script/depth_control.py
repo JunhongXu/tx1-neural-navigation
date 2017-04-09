@@ -32,7 +32,6 @@ class DepthController(object):
         self.twist = Twist()
         self.division = 6
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
-        self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         # keeps the node alive
@@ -103,8 +102,8 @@ class DepthController(object):
             #     self.twist.angular.z = 0.0
 
             self.twist.linear.x = 0.5
-            self.pub.publish(self.twist)
-            self.move_pub.publish(self.twist)
+            # self.pub.publish(self.twist)
+            # self.move_pub.publish(self.twist)
         except CvBridgeError as error:
             print(error)
 
