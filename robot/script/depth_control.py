@@ -53,30 +53,23 @@ class DepthController(object):
             # print(depth_img)
             H, W = depth_img.shape
             left_win = depth_img[:, :W//3]
-            left_win = self.reject_nan_inf(left_win)
-            center_win = self.reject_nan_inf(depth_img[:, W//3:2*W//3])
-            right_win = self.reject_nan_inf(depth_img[:, 2*W//3:])
+            left_win = self.reject_outliers(self.reject_nan_inf(left_win))
+            center_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, W//3:2*W//3]))
+            right_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, 2*W//3:]))
             if self.count(center_win) >= 0.3:
                 print('Danger')
                 if np.sum(left_win) < np.sum(right_win):
-                    print('Turn right')
                     self.twist.angular.z = -2.0
                 elif np.sum(left_win) >= self.count(right_win):
-                    print('Turn left')
                     self.twist.angular.z = 2.0
             # for checking edge
             elif self.count(left_win) > 0.2 or self.count(right_win) >= 0.2:
                 if np.sum(left_win) < np.sum(right_win):
-                    print('Turn right')
                     self.twist.angular.z = -2.0
                 elif np.sum(left_win) >= self.count(right_win):
-                    print('Turn left')
                     self.twist.angular.z = 2.0
             else:
                 self.twist.angular.z = 0.0
-            print('LEFT, %s ' % (left_win[left_win<=1.2].shape[0]/left_win.shape[0]))
-            print('RIGHT, %s ' % (right_win[right_win<=1.2].shape[0]/right_win.shape[0]))
-            print('CENTER %s' % (center_win[center_win<=1.2].shape[0]/center_win.shape[0]))
             # info = np.zeros(self.division)
             # sum_data = 0
             # whole_mean = np.mean(self.reject_nan_inf(depth_img))

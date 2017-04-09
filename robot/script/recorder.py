@@ -141,10 +141,9 @@ class Recorder(object):
             self.total_frame += 1
         if self.safety_record or self.primary_record or (not self.safe and self.avoided):
             self.record_img(rgb, 'rgb', self.twist)
-
-    def save_depth(self, depth):
-        if self.primary_record or self.safety_record or (not self.safe and self.avoided):
-            self.record_img(depth, 'depth', self.twist)
+        elif not self.safe and self.avoided:
+            self.num_frames += 1
+            self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
         with self.twist_lock:
