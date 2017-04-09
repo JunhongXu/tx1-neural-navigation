@@ -62,7 +62,7 @@ class NeuralNet(object):
             twist.linear.x = primary_pi[0][0]*0.5
             twist.angular.z = primary_pi[0][1]*4.25
 
-            if safety_pi >= 0.99:
+            if safety_pi >= 0.9:
                 rospy.loginfo('[!]UNSAFE SITUATION DETECTED!')
                 self.safe = False
             else:
