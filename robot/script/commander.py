@@ -49,7 +49,7 @@ class Commander(object):
         rospy.Subscriber('/neural_cmd', Twist, self.neural_cmd, queue_size=5)
         rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/odom', Odometry, self.update_odom)
-        rospy.Subscriber('/depth_control', Twist, self.depth_cmd, queue_size=5)
+        rospy.Subscriber('/depth_control', Twist, self.update_depth_cmd, queue_size=5)
         # publisher
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=1)
@@ -114,7 +114,7 @@ class Commander(object):
             self.curr_x = self.prev_x = position
         self.reset_pub.publish(Bool(self.is_avoid))
 
-    def depth_cmd(self, data):
+    def update_depth_cmd(self, data):
         self.depth_cmd = data
 
     def joystick_cmd(self, cmd):
