@@ -84,8 +84,6 @@ class Recorder(object):
         rospy.spin()
 
     def bumper(self, data):
-        print (data.is_left_pressed )
-        print (data.is_right_pressed)
         if data.is_left_pressed or data.is_right_pressed:
             # store images
             rospy.loginfo('[*]Saving bumper images')
