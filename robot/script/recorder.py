@@ -56,6 +56,7 @@ class Recorder(object):
         self.num_crashes = 0
         self.num_frames = 0
         self.total_frame = 0
+        self.neural_net_on = False
         # pre-stored frames and controls
         self.stored_data = deque(maxlen=5)
         self.bumper_lock = Lock()
@@ -77,11 +78,21 @@ class Recorder(object):
 
         rospy.Subscriber('/bumper', Bumper, self.bumper)
 
+        rospy.Subscriber('/toggle_nn', Bool, self.is_nn_on)
+
         rospy.init_node('recorder')
 
         rospy.on_shutdown(self.shutdown)
         # keeps the node alive
         rospy.spin()
+
+    def is_nn_on(self, data):
+        if data.data is True:
+            rospy.loginfo('[*]Recorder: Neural Network ON')
+            self.neural_net_on = True
+        else:
+            rospy.loginfo('[*]Recorder: Neural Network ON')
+            self.neural_net_on = False
 
     def bumper(self, data):
         if data.is_left_pressed or data.is_right_pressed:
@@ -146,12 +157,6 @@ class Recorder(object):
             # only record non-zero data
             if self.twist is not None:
                 timestamp = data.header.stamp
-                # if not self.safe and not self.primary_record:
-                #     self.num_frames += 1
-                #     v = self.depth_twist.linear.x
-                #     r = self.depth_twist.angular.z
-                #     rospy.loginfo('[!]DEPTH POLICY SPEED %s, %s' % (v, r))
-                # else:
                 v = twist.linear.x
                 r = twist.angular.z
                 with self.bumper_lock:
@@ -175,9 +180,10 @@ class Recorder(object):
         self.total_frame += 1
         if self.safety_record or self.primary_record:
             self.record_img(rgb, 'rgb', self.twist)
-        elif not self.safe and self.avoided:
-            self.num_frames += 1
-            self.record_img(rgb, 'rgb', self.depth_twist)
+        elif self.neural_net_on:
+            if self.safe and self.avoided:
+                self.num_frames += 1
+                self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
         # with self.twist_lock:

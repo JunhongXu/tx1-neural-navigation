@@ -34,7 +34,8 @@ class NeuralNet(object):
         self.safe = True
         rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.predict)
-        rospy.Subscriber('/joy', Joy, callback=self.toggle_nn)
+        # rospy.Subscriber('/joy', Joy, callback=self.toggle_nn)
+        rospy.Subscriber('/toggle_nn', Bool, callback=self.is_nn_on)
         rospy.init_node('neural_commander')
         rospy.spin()
 
@@ -43,15 +44,21 @@ class NeuralNet(object):
         if self.neural_net_on:
             pass
 
-    def toggle_nn(self, data):
-        self.controller.update(data)
-        events = self.controller.btn_events
-        if 'R2_pressed' in events:
-            self.neural_net_on = not self.neural_net_on
-            if self.neural_net_on:
-                rospy.loginfo('[*]Start Neural Network.')
-            else:
-                rospy.loginfo('[*]Stop Neural Network.')
+    def is_nn_on(self, data):
+        if data.data is True:
+            self.neural_net_on = True
+            rospy.loginfo('[*]Start Neural Network...')
+        else:
+            self.neural_net_on = False
+            rospy.loginfo('[*]Stop Neural Network...')
+        # self.controller.update(data)
+        # events = self.controller.btn_events
+        # if 'R2_pressed' in events:
+        #     self.neural_net_on = not self.neural_net_on
+        #     if self.neural_net_on:
+        #         rospy.loginfo('[*]Start Neural Network.')
+        #     else:
+        #         rospy.loginfo('[*]Stop Neural Network.')
 
     def predict(self, data):
         if self.neural_net_on:

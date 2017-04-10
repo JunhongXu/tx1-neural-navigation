@@ -52,8 +52,9 @@ class Commander(object):
         rospy.Subscriber('/odom', Odometry, self.update_odom)
         rospy.Subscriber('/depth_control', Twist, self.update_depth_cmd, queue_size=5)
         # publisher
-        self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=1)
+        self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
+        self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=5)
+        self.nn_controller = rospy.Publisher('/toggle_nn', Bool, queue_size=5)
         # initialize rosnode
         rospy.init_node('commander', anonymous=True)
         self.rate = rospy.Rate(60)
@@ -137,6 +138,8 @@ class Commander(object):
                 self.human_mode = True
                 self.depth_mod = False
                 rospy.loginfo('[*]Human controlling...')
+            toggle_nn = Bool(self.neuralnet_mode)
+            self.nn_controller.publish(toggle_nn)
 
         elif 'R1_pressed' in btn_events:
             self.depth_mod = not self.depth_mod
