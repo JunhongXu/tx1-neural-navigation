@@ -151,6 +151,8 @@ class Commander(object):
                 self.human_mode = True
                 self.neuralnet_mode = False
                 rospy.loginfo('[*]Stop depth controller')
+            toggle_nn = Bool(self.neuralnet_mode)
+            self.nn_controller.publish(toggle_nn)
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd

@@ -51,14 +51,6 @@ class NeuralNet(object):
         else:
             self.neural_net_on = False
             rospy.loginfo('[*]Stop Neural Network...')
-        # self.controller.update(data)
-        # events = self.controller.btn_events
-        # if 'R2_pressed' in events:
-        #     self.neural_net_on = not self.neural_net_on
-        #     if self.neural_net_on:
-        #         rospy.loginfo('[*]Start Neural Network.')
-        #     else:
-        #         rospy.loginfo('[*]Stop Neural Network.')
 
     def predict(self, data):
         if self.neural_net_on:

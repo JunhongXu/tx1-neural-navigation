@@ -181,7 +181,7 @@ class Recorder(object):
         if self.safety_record or self.primary_record:
             self.record_img(rgb, 'rgb', self.twist)
         elif self.neural_net_on:
-            if self.safe and self.avoided:
+            if not self.safe and self.avoided:
                 self.num_frames += 1
                 self.record_img(rgb, 'rgb', self.depth_twist)
 

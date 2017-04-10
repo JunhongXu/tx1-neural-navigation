@@ -80,10 +80,6 @@ class DepthController(object):
         return data[abs(data - np.mean(data)) < 2* np.std(data)]
 
 
-    def sigmoid(self, data):
-        return 1/ (1+np.exp(-data))
-
-
 if __name__ == '__main__':
     try:
         recorder = DepthController()
