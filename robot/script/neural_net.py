@@ -28,11 +28,12 @@ class NeuralNet(object):
         self.twist_cmd = rospy.Publisher('/neural_cmd', Twist, queue_size=5)
         self.safety_cmd = rospy.Publisher('/safety', Bool, queue_size=5)
         self.sess = tf.Session()
-        self.model.restore(self.sess, self.train_iter)
+        if train_iter > 0:
+            self.model.restore(self.sess, self.train_iter)
         self.bridge = cv_bridge.CvBridge()
         self.controller = PS3()
         self.safe = True
-        rospy.Subscriber('/bumper', Bumper, self.reset)
+        # rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.predict)
         # rospy.Subscriber('/joy', Joy, callback=self.toggle_nn)
         rospy.Subscriber('/toggle_nn', Bool, callback=self.is_nn_on)
@@ -79,7 +80,6 @@ class NeuralNet(object):
 if __name__ == '__main__':
     try:
         train_iter = int(sys.argv[2]) - 1
-        train_iter = max(0, train_iter)
         nn = NeuralNet(train_iter)
     except rospy.ROSInterruptException:
         pass
