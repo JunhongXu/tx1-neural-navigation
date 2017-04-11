@@ -95,18 +95,19 @@ class Recorder(object):
             self.neural_net_on = False
 
     def bumper(self, data):
-        if data.is_left_pressed or data.is_right_pressed:
-            # store images
-            self.num_crashes += 1
-            rospy.loginfo('[*]Saving bumper images')
-            with self.bumper_lock:
-                for timestamp, control, img in self.stored_data:
-                    v = control.linear.x
-                    r = control.angular.z
-                    print(v, r)
-                    filename = self.RGB_PATH
-                    filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
-                    cv2.imwrite(filename, img)
+        if self.neural_net_on:
+            if data.is_left_pressed or data.is_right_pressed:
+                # store images
+                self.num_crashes += 1
+                rospy.loginfo('[*]Saving bumper images')
+                with self.bumper_lock:
+                    for timestamp, control, img in self.stored_data:
+                        v = control.linear.x
+                        r = control.angular.z
+                        print(v, r)
+                        filename = self.RGB_PATH
+                        filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
+                        cv2.imwrite(filename, img)
 
     def shutdown(self):
         crashes = '{}, {}'.format(self.train_iter, self.num_crashes)
