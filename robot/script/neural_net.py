@@ -79,7 +79,7 @@ class NeuralNet(object):
 
 if __name__ == '__main__':
     try:
-        train_iter = int(sys.argv[2]) - 1
+        train_iter = int(sys.argv[2])
         nn = NeuralNet(train_iter)
     except rospy.ROSInterruptException:
         pass
