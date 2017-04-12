@@ -95,9 +95,8 @@ if __name__ == '__main__':
         # initialize all variables
         sess.run(tf.global_variables_initializer())
 
-        if TRAIN_ITER > -1:
-            # model.restore(sess, TRAIN_ITER)
-            pass
+        if TRAIN_ITER > 0:
+            model.restore(sess, TRAIN_ITER)
 
         train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(TRAIN_ITER)

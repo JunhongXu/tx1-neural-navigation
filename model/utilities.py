@@ -11,8 +11,7 @@ def __split_name(labels, name):
     splitted = name.split('_')
     v = float(splitted[-2])
     r = float(splitted[-1].strip('.png'))
-    label = np.array([v/0.5, r/4.25], dtype=np.float32)
-    labels.append(label)
+    return v, r
 
 
 def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=False, safety=False):
@@ -21,21 +20,28 @@ def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=F
     rgb_labels = []
     depth_imgs = []
     depth_labels = []
-    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/iteration_%s' % iteration
+    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/'
     filedir = os.path.join(filedir, 'safety' if safety else 'primary')
     print(filedir)
 
     if read_rgb:
-        rgb_names = glob.glob(os.path.join(filedir, 'RGB_DATA/*.png'))
-        print('[*]Collected %s RGB pictures.' % len(rgb_names))
+        rgb_names = glob.glob(os.path.join(filedir, 'RGB_DATA/%s/*.png' % iteration))
+        # remove the unlabeled data
         for n in sorted(rgb_names):
-            __split_name(rgb_labels, n)
-            rgb_img = cv2.imread(n)
-            if display:
-                cv2.imshow('test', rgb_img)
-                cv2.waitKey(5)
-            rgb_img = cv2.resize(rgb_img, (128, 128))
-            rgb_imgs.append(rgb_img)
+            v, r = __split_name(rgb_labels, n)
+            if v == 0.0 and r== 0.0:
+                os.remove(n)
+                print(n, 'has been removed')
+            else:
+                rgb_img = cv2.imread(n)
+                if display:
+                    cv2.imshow('test', rgb_img)
+                    cv2.waitKey(5)
+                rgb_img = cv2.resize(rgb_img, (128, 128))
+                rgb_imgs.append(rgb_img)
+                label = np.array([v/0.5, r/4.25])
+                rgb_labels.append(label)
+        print('[*]Collected %s RGB pictures.' % len(rgb_imgs))
 
     if read_depth:
         depth_names = glob.glob(os.path.join(filedir, 'DEPTH_DATA/*.png'))
