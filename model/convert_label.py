@@ -28,6 +28,7 @@ if __name__ == '__main__':
         if label[0] == 0:
             cv2.imwrite('/home/jxu7/Research/WGAN-TF/data/indoor-0/%s.png' % safe_idx, image)
             safe_idx += 1
+
         # unsafe
         else:
             cv2.imwrite('/home/jxu7/Research/WGAN-TF/data/indoor-1/%s.png' % unsafe_idx, image)
