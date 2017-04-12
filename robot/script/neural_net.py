@@ -29,7 +29,7 @@ class NeuralNet(object):
         self.safety_cmd = rospy.Publisher('/safety', Bool, queue_size=5)
         self.sess = tf.Session()
         if train_iter > 0:
-            self.model.restore(self.sess, self.train_iter)
+            self.model.restore(self.sess, self.train_iter-1)
         self.bridge = cv_bridge.CvBridge()
         self.controller = PS3()
         self.safe = True
