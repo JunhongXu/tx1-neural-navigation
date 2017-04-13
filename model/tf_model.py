@@ -32,7 +32,7 @@ class NeuralCommander(object):
 
         # primary loss
         with tf.variable_scope('primary_loss'):
-            self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(self.y, self.pi), 1)), name='loss')
+            self.loss = tf.reduce_mean(tf.squared_difference(self.y, self.pi), name='loss')
 
         # safety loss
         self.safety_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.safety_y,

@@ -36,7 +36,7 @@ def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=F
                 rgb_img = cv2.imread(n)
                 if display:
                     cv2.imshow('test', rgb_img)
-                    cv2.waitKey(5)
+                    cv2.waitKey(3)
                 rgb_img = cv2.resize(rgb_img, (128, 128))
                 rgb_imgs.append(rgb_img)
                 label = np.array([v/0.5, r/4.25])

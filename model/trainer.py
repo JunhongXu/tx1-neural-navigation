@@ -5,27 +5,33 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 0
+TRAIN_ITER = 1
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0025
 DISPLAY = False
-NUM_ITERS = 20000
+NUM_ITERS = 25000
 
 
 def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):
     N, H, W, C = x.shape
+    # grad_summ = tf.get_collection(tf.GraphKeys.SUMMARIES, scope=)
+    grad_summ = tf.get_collection(tf.GraphKeys.SUMMARIES, scope='primary_optimizer')
     summary = tf.summary.scalar('primary_loss', model.loss)
+    summary = tf.summary.merge([summary] + grad_summ)
     # train the primary policy
     for i in range(num_iter):
         # random index
         index = np.random.randint(0, N, size=BATCH_SIZE)
-        loss, _, loss_summary = sess.run([model.loss, trainer, summary], feed_dict={model.x: x[index],
+        loss, _, loss_summary, pi = sess.run([model.loss, trainer, summary, model.pi], feed_dict={model.x: x[index],
                                                              model.y: y[index], model.is_training:True})
         writer.add_summary(loss_summary, global_step=i)
+        if loss == np.nan:
+            print(y[index])
         if i % 99 == 0:
             # save
             model.save(sess, TRAIN_ITER)
             print('[*]At iteration %s/%s, loss is %s' % (i, num_iter, loss))
+            print('[*]Ground Truth %s / Predicted %s' % (y[index][0], pi[0]))
 
 
 def train_safety_policy(sess, safety_x, pi_label, writer, model, num_iter, trainer):
@@ -82,13 +88,14 @@ if __name__ == '__main__':
         model = NeuralCommander()
         # trainer for primary policy
         primary_policy_trainer = optimize_loss(
-            model.loss, model.global_pi_setp, learning_rate=0.00005, name='primary_optimizer',
-            optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'cnn' in v.name]
+            model.loss, model.global_pi_setp, learning_rate=0.0005, name='primary_optimizer',
+            optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'cnn' in v.name],
+            summaries='gradient_norm'
         )
 
         # trainer for safety policy
         safety_policy_trainer = optimize_loss(
-            model.safety_loss, model.global_safety_step, learning_rate=0.0003, name='safety_optimizer',
+            model.safety_loss, model.global_safety_step, learning_rate=0.0009, name='safety_optimizer',
             optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'safety_policy' in v.name]
         )
 
@@ -96,7 +103,7 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
 
         if TRAIN_ITER > 0:
-            model.restore(sess, TRAIN_ITER)
+            model.restore(sess, TRAIN_ITER-1)
 
         train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(TRAIN_ITER)

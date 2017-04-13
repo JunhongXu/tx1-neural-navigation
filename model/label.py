@@ -21,6 +21,7 @@ class Label(object):
         self.img_dim = 256
         self.speed_mode = False
         self.firs_loaded = True
+        self.num_labeled = 0
 
     def on_mouse(self, event, x, y, flags, params):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -35,7 +36,7 @@ class Label(object):
 
     def read_names (self, iteration):
         # read all image names
-        filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/iteration_%s/primary' % iteration
+        filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/primary/RGB_DATA/%s' % iteration
         names = glob.glob(os.path.join(filedir, '*.png'))
         print('Found %s images' % len(names))
         return names
@@ -70,6 +71,7 @@ class Label(object):
             self.show()
         elif event == ord('s'):
             # rename the current image file
+            self.num_labeled += 1
             name = self.curr_name.split('/')
             base_path = name[1:-1]
             img_name = name[-1].split('_')
@@ -124,6 +126,7 @@ class Label(object):
 
     def show(self):
         print('[!]There are %s left to be labelled' % len(self.names))
+        print('[*]Total number of images that have been labelled %s' %self.num_labeled)
         if len(self.names) == 0:
             self.quit = True
         self.curr_name = self.names[self.curr_idx]
