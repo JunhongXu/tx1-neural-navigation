@@ -87,7 +87,7 @@ def convert_to_pkl(train_iter):
     """Save tensorflow model to a pickle file"""
     params = {}
     with tf.Session() as sess:
-        model = NeuralCommander()
+        model = NeuralCommander(128)
         model.restore(sess, train_iter)
         for v in model.params:
             params[v.name] = sess.run(v)

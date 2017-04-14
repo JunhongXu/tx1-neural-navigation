@@ -85,7 +85,7 @@ def train(sess, model, trainer, safety_trainer, num_iter):
 
 if __name__ == '__main__':
     with tf.Session() as sess:
-        model = NeuralCommander()
+        model = NeuralCommander(BATCH_SIZE)
         # trainer for primary policy
         primary_policy_trainer = optimize_loss(
             model.loss, model.global_pi_setp, learning_rate=0.0005, name='primary_optimizer',

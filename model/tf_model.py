@@ -6,7 +6,7 @@ from tensorflow.contrib import layers
 
 
 class NeuralCommander(object):
-    def __init__(self, inpt_size=(128, 128, 3)):
+    def __init__(self, batch_size, alpha=0.3, beta=1, inpt_size=(128, 128, 3)):
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
         # two elements, first one is velocity, last one is rotation
@@ -31,8 +31,17 @@ class NeuralCommander(object):
             print('{}: {}'.format(p.name, p.get_shape()))
 
         # primary loss
-        with tf.variable_scope('primary_loss'):
-            self.loss = tf.reduce_mean(tf.squared_difference(self.y, self.pi), name='loss')
+        with tf.name_scope('imitation_loss'):
+            # imitation loss
+            self.imitation_loss = tf.reduce_mean(tf.squared_difference(self.y, self.pi))
+
+        with tf.name_scope('task_loss'):
+            # task loss
+            self.task_loss = tf.reduce_mean(tf.squared_difference(tf.fill([batch_size, 1], 1.0), self.pi[:, 0]))
+
+        with tf.name_scope('primary_loss'):
+            self.loss = alpha*self.imitation_loss + beta*self.task_loss
+
 
         # safety loss
         self.safety_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.safety_y,
