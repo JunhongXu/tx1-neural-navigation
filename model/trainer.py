@@ -105,6 +105,7 @@ if __name__ == '__main__':
         if TRAIN_ITER > 0:
             model.restore(sess, TRAIN_ITER-1)
 
+
         # train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(TRAIN_ITER)
 
