@@ -91,6 +91,6 @@ def convert_to_pkl(train_iter):
         model.restore(sess, train_iter)
         for v in model.params:
             params[v.name] = sess.run(v)
-    with open('../checkpoint/%s/pkl_model.pkl' % train_iter, 'w') as f:
+    with open('../checkpoint/%s/pkl_model.pkl' % train_iter, 'wb') as f:
         pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
     print('[*]Saved to pkl file')
