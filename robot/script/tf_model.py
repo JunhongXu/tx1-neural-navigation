@@ -63,7 +63,7 @@ class NeuralCommander(object):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')
 
     def restore(self, sess, NUM_ITER):
-        with open('../../checkpoint/%s/pkl_model.pkl' % NUM_ITER, 'r') as f:
+        with open('../../checkpoint/%s/pkl_model.pkl' % NUM_ITER, 'rb') as f:
             params = pickle.load(f)
             # restore
             keys = sorted(params.keys())
