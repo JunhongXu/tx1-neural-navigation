@@ -54,7 +54,7 @@ def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=F
     return np.array(rgb_imgs), np.array(rgb_labels), np.array(depth_imgs), np.array(depth_labels)
 
 
-def convert_labels(sess, model, safe_img, reference_label, threshhold):
+def convert_labels(sess, model, safe_img, reference_label, threshhold, randomize=False, p=None):
     """
         This function labels each image a 0 or a one, where 0 means no danger, 1 means danger.
         Returns the feature extracted from primary policy cnn and the labels.

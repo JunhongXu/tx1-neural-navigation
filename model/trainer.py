@@ -1,5 +1,6 @@
 import tensorflow as tf
 from model.tf_model import NeuralCommander
+from model.color_randomization import *
 from model.utilities import *
 from tensorflow.contrib.layers import optimize_loss
 import numpy as np
@@ -10,6 +11,8 @@ BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0025
 DISPLAY = False
 NUM_ITERS = 25000
+RANDOMIZE = True
+P = 0.3
 
 
 def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):
@@ -22,7 +25,12 @@ def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):
     for i in range(num_iter):
         # random index
         index = np.random.randint(0, N, size=BATCH_SIZE)
-        loss, _, loss_summary, pi = sess.run([model.loss, trainer, summary, model.pi], feed_dict={model.x: x[index],
+        if RANDOMIZE:
+            data = color_randomization(x[index], P)
+        else:
+            data = x[index]
+
+        loss, _, loss_summary, pi = sess.run([model.loss, trainer, summary, model.pi], feed_dict={model.x: data,
                                                              model.y: y[index], model.is_training:True})
         writer.add_summary(loss_summary, global_step=i)
         if loss == np.nan:
@@ -39,7 +47,7 @@ def train_safety_policy(sess, safety_x, pi_label, writer, model, num_iter, train
     N, H, W, C = safety_x.shape
     summary = tf.summary.scalar('safety_loss', model.safety_loss)
     x, y = convert_labels(sess=sess, model=model, reference_label=pi_label, safe_img=safety_x,
-                          threshhold=SAFETY_THRESHOLD)
+                          threshhold=SAFETY_THRESHOLD, randomize=RANDOMIZE, p=P)
     # train the safety policy
     for i in range(num_iter):
         # random index
@@ -105,7 +113,7 @@ if __name__ == '__main__':
         if TRAIN_ITER > 0:
             model.restore(sess, TRAIN_ITER-1)
 
-        # train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
+        train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(TRAIN_ITER)
 
 

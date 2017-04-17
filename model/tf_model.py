@@ -6,7 +6,7 @@ from tensorflow.contrib import layers
 
 
 class NeuralCommander(object):
-    def __init__(self, batch_size, alpha=0.3, beta=1, inpt_size=(128, 128, 3)):
+    def __init__(self, batch_size=128, alpha=1.0, beta=0.4, inpt_size=(128, 128, 3)):
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
         # two elements, first one is velocity, last one is rotation

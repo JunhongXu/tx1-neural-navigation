@@ -16,7 +16,7 @@ if __name__ == '__main__':
     pi_label = np.concatenate((pi_label, y), axis=0)
 
     with tf.Session() as sess:
-        model = NeuralCommander()
+        model = NeuralCommander(128)
         model.restore(sess, 0)
         x, y = convert_labels(sess=sess, model=model, reference_label=pi_label, safe_img=safety_x, threshhold=0.0025)
 
