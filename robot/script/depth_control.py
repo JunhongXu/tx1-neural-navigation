@@ -5,6 +5,7 @@ Subscriber:
     2. This node subscribes to the topic /zed/depth/depth_registered to save the depth image using cv2
     3. This node subscribes to the topic /cmd_vel to get filename for each image
     4. This node subscribes to the topic /zed/odom to save the 3D orientation relative to zed_initial_frame
+    5. This node subscribes to the topic /distance_left and /distance_right to detect possible collisions
 """
 from __future__ import print_function
 from __future__ import division
@@ -13,14 +14,8 @@ import cv2
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, Joy
-from std_msgs.msg import Bool
-import os
-from threading import Lock
-from controller import PS3
-import sys
-from ca_msgs.msg import Bumper
+from std_msgs.msg import Float32
 import numpy as np
 
 
@@ -32,10 +27,25 @@ class DepthController(object):
         self.twist = Twist()
         self.division = 6
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
+        self.left_dist = Float32()
+        self.right_dist = Float32()
+        self.is_close = False
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
+        rospy.Subscriber('/distance_left', Float32, self.update_left_distance)
+        rospy.Subscriber('/distance_right', Float32, self.update_right_distance)
         # keeps the node alive
         rospy.spin()
+
+    def update_left_distance(self, data):
+        self.left_dist = data.data
+        if self.left_dist < 0.8:
+            pass
+
+    def update_right_distance(self, data):
+        self.right_dist = data.data
+        if self.right_dist < 0.8:
+            pass
 
     def reject_nan_inf(self, data):
         data = data[~np.isnan(data)]
