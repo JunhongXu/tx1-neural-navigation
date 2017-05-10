@@ -39,13 +39,13 @@ class DepthController(object):
 
     def update_left_distance(self, data):
         self.left_dist = data.data
-        if self.left_dist < 0.8:
+        if self.left_dist < 20:
             print("left IS IN DANGER", self.right_dist)
 
     def update_right_distance(self, data):
         self.right_dist = data.data
 
-        if self.right_dist < 0.8:
+        if self.right_dist < 20:
             print("RIGHT IS IN DANGER", self.right_dist)
 
     def reject_nan_inf(self, data):
