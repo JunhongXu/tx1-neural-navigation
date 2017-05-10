@@ -39,11 +39,13 @@ class DepthController(object):
 
     def update_left_distance(self, data):
         self.left_dist = data.data
+        print(self.left_dist)
         if self.left_dist < 0.8:
             pass
 
     def update_right_distance(self, data):
         self.right_dist = data.data
+        print(self.right_dist)
         if self.right_dist < 0.8:
             pass
 
