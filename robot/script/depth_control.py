@@ -66,6 +66,7 @@ class DepthController(object):
             left_win = self.reject_outliers(self.reject_nan_inf(left_win))
             center_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, W//3:2*W//3]))
             right_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, 2*W//3:]))
+            self.twist.linear.x = 0.5
             if self.count(center_win) >= 0.3:
                 if np.sum(left_win) < np.sum(right_win):
                     self.twist.angular.z = -4.5*self.count(left_win)
@@ -77,10 +78,17 @@ class DepthController(object):
                     self.twist.angular.z = -4.5*self.count(left_win)
                 elif np.sum(left_win) >= np.sum(right_win):
                     self.twist.angular.z = 4.5*self.count(right_win)
+            # for checking ultrosonic distance
+            elif self.left_dist <=20 or self.right_dist <=20:
+                # this actually is right, have wrong setup in the hardware
+                if self.left_dist <= 20:
+                    self.twist.angular.z = 4.5
+                elif self.right_dist <=20:
+                    self.twist.angular.z = -4.5
+                elif self.right_dist <= 20 and self.left_dist <=20:
+                    self.twist.linear.x = -0.2
             else:
                 self.twist.angular.z = 0.0
-
-            self.twist.linear.x = 0.5
             self.pub.publish(self.twist)
         except CvBridgeError as error:
             print(error)
