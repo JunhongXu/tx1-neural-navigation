@@ -30,6 +30,8 @@ class NeuralNet(object):
         self.sess = tf.Session()
         if train_iter > 0:
             self.model.restore(self.sess, self.train_iter-1)
+        else:
+            self.sess.run(tf.initialize_all_variables())
         self.bridge = cv_bridge.CvBridge()
         self.controller = PS3()
         self.safe = True
