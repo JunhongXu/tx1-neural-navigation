@@ -30,6 +30,7 @@ class DepthController(object):
         self.left_dist = Float32()
         self.right_dist = Float32()
         self.is_close = False
+        self.safety_distance = 0.2
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         rospy.Subscriber('/distance_left', Float32, self.update_left_distance)
@@ -75,13 +76,13 @@ class DepthController(object):
                 elif np.sum(left_win) >= np.sum(right_win):
                     self.twist.angular.z = 4.5*self.count(right_win)
             # for checking ultrosonic distance
-            elif self.left_dist <=0.5 or self.right_dist <=0.5:
+            elif self.left_dist <=self.safety_distance or self.right_dist <=self.safety_distance:
                 # this actually is right, have wrong setup in the hardware
-                if self.left_dist <= 0.5:
+                if self.left_dist <= self.safety_distance:
                     self.twist.angular.z = 4.5
-                elif self.right_dist <= 0.5:
+                elif self.right_dist <= self.safety_distance:
                     self.twist.angular.z = -4.5
-                elif self.right_dist <= 0.5 and self.left_dist <=0.5:
+                elif self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
                     self.twist.linear.x = -0.2
             else:
                 self.twist.angular.z = 0.0
