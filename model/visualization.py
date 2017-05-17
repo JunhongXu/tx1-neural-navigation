@@ -75,7 +75,7 @@ def upsample_multiply(feature, f0, f1, f2, f3, combined, index, sess):
 
 def overlay(x, visual_map, index):
     """
-    x: N, H, W, C
+    x: H, W, C
     visual_map: N, H, W, 1
     """
     feature = visual_map[0]
