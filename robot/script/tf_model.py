@@ -13,6 +13,7 @@ This class should be in robot/script/ folder.
 This class load a picle file which stores dictionary of parameters {param.name: param}.
 """
 
+
 class NeuralCommander(object):
     def __init__(self, inpt_size=(128, 128, 3)):
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
