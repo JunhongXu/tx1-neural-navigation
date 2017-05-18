@@ -30,7 +30,7 @@ class DepthController(object):
         self.left_dist = Float32()
         self.right_dist = Float32()
         self.is_close = False
-        self.safety_distance = 0.2
+        self.safety_distance = 15
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         rospy.Subscriber('/distance_left', Float32, self.update_left_distance)
@@ -43,7 +43,6 @@ class DepthController(object):
 
     def update_right_distance(self, data):
         self.right_dist = data.data
-
 
     def reject_nan_inf(self, data):
         data = data[~np.isnan(data)]
