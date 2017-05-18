@@ -27,8 +27,8 @@ class DepthController(object):
         self.twist = Twist()
         self.division = 6
         self.pub = rospy.Publisher('/depth_control', Twist, queue_size=5)
-        self.left_dist = Float32()
-        self.right_dist = Float32()
+        self.left_dist = 0
+        self.right_dist = 0
         self.is_close = False
         self.safety_distance = 15
         # depth
@@ -82,9 +82,9 @@ class DepthController(object):
                     print('GO BACK!!!!!!')
                     self.twist.angular.z = 0.0
                 elif self.right_dist <= self.safety_distance:
-                    self.twist.angular.z = -4.5
+                    self.twist.angular.z = -(4.5 - self._sigmoid(self.right_dist/10))
                 elif self.left_dist <= self.safety_distance:
-                    self.twist.angular.z = 4.5
+                    self.twist.angular.z = 4.5 - self._sigmoid(self.left_dist/10)
 
             else:
                 self.twist.angular.z = 0.0
@@ -93,6 +93,9 @@ class DepthController(object):
             print(error)
         except ZeroDivisionError as error:
             print(error)
+
+    def _sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
 
     def reject_outliers(self, data):
         return data[abs(data - np.mean(data)) < 2* np.std(data)]
