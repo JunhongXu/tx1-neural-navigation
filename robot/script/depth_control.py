@@ -80,6 +80,7 @@ class DepthController(object):
                 # this actually is right, have wrong setup in the hardware
                 if self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
                     self.twist.linear.x = -0.3
+                    print('GO BACK!!!!!!')
                     self.twist.angular.z = 0.0
                 elif self.right_dist <= self.safety_distance:
                     self.twist.angular.z = -4.5
