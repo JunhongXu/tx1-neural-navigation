@@ -30,7 +30,7 @@ class DepthController(object):
         self.left_dist = 0
         self.right_dist = 0
         self.is_close = False
-        self.safety_distance = 15
+        self.safety_distance = 25
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         rospy.Subscriber('/distance_left', Float32, self.update_left_distance)
