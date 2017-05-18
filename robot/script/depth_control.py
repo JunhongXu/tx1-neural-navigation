@@ -62,8 +62,9 @@ class DepthController(object):
             left_win = self.reject_outliers(self.reject_nan_inf(left_win))
             center_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, W//3:2*W//3]))
             right_win = self.reject_outliers(self.reject_nan_inf(depth_img[:, 2*W//3:]))
+            valid_points = left_win.shape[0]+center_win.shape[0]+right_win.shape[0]
             self.twist.linear.x = 0.5
-            print(H*W, left_win.shape[0]+center_win.shape[0]+right_win.shape[0])
+            print(H*W, valid_points, H*W/valid_points)
             if self.count(center_win) >= 0.3:
                 if np.sum(left_win) < np.sum(right_win):
                     self.twist.angular.z = -4.5*self.count(left_win)
