@@ -67,6 +67,7 @@ class NeuralCommander(object):
         print('[*]Completely saved model.')
 
     def restore(self, sess, num_iter):
+        import os
         ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/' % num_iter)
         print(ckpt.model_checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:

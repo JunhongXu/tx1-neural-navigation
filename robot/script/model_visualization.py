@@ -8,6 +8,7 @@ import cv2
 from tensorflow.contrib.layers import *
 from model.tf_model import NeuralCommander
 import numpy as np
+import os
 
 
 class Visualizer(object):
@@ -21,10 +22,12 @@ class Visualizer(object):
         self.model = NeuralCommander()
         self.f0, self.f1, self.f2, self.f3, self.map = self.__build_deconv()
         self.sess.run(tf.global_variables_initializer())
-
+        cwd = os.getcwd()
+        cwd = os.path.join(cwd, '..')
+        os.chdir(cwd)
         self.layers = self.model.layers[:7][::2]
         if iteration > 0:
-            self.sess.run(self.model.restore(self.sess, iteration))
+            self.model.restore(self.sess, iteration)
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.visualize)
         rospy.init_node('visualizer')
@@ -55,22 +58,23 @@ class Visualizer(object):
         return feature0, feature1, feature2, feature3, combined_feat3
 
     def overaly(self, feat, x):
-        idx = np.where(np.squeeze(feat) >= 0.1)
-        x[idx] = [255, 0, 0] * (1- x[idx])
-        cv2.imshow('feature', feat)
-        cv2.imshow('image', x)
-        cv2.waitKey(30)
+        idx = np.where(np.squeeze(feat) >= 0.05)
+        x[idx] = [0, 0, 255] * (1- x[idx])
+        cv2.imshow('feature', cv2.resize(feat, (256, 256)))
+        cv2.imshow('image', cv2.resize(x, (256, 256)))
+        cv2.waitKey(10)
 
     def visualize(self, data):
         x = self.bridge.imgmsg_to_cv2(data)
         x = cv2.resize(x, (128, 128))
-        features = self.sess.run(self.layers, feed_dict={self.model.x: x.reshape(1, 128, 128, 3)})[0]
-        f3, f2, f1, f0 =features
+        features = self.sess.run(self.layers, feed_dict={self.model.x: x.reshape(1, 128, 128, 3)})
+        f3, f2, f1, f0 =np.mean(features[0], axis=-1), np.mean(features[1], axis=-1), np.mean(features[2], axis=-1), \
+                        np.mean(features[3], axis=-1)
         combined_feat = self.sess.run(self.map, feed_dict={
-            self.f0: np.expand_dims(f0, axis=0),
-            self.f1: np.expand_dims(f1, axis=0),
-            self.f2: np.expand_dims(f2, axis=0),
-            self.f3: np.expand_dims(f3, axis=0)
+            self.f0: np.expand_dims(f0, axis=-1),
+            self.f1: np.expand_dims(f1, axis=-1),
+            self.f2: np.expand_dims(f2, axis=-1),
+            self.f3: np.expand_dims(f3, axis=-1)
         })[0]
 
         self.overaly(combined_feat, x)

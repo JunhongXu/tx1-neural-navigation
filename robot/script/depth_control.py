@@ -78,12 +78,14 @@ class DepthController(object):
             # for checking ultrosonic distance
             elif self.left_dist <=self.safety_distance or self.right_dist <=self.safety_distance:
                 # this actually is right, have wrong setup in the hardware
-                if self.left_dist <= self.safety_distance:
-                    self.twist.angular.z = 4.5
+                if self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
+                    self.twist.linear.x = -0.3
+                    self.twist.angular.z = 0.0
                 elif self.right_dist <= self.safety_distance:
                     self.twist.angular.z = -4.5
-                elif self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
-                    self.twist.linear.x = -0.2
+                elif self.left_dist <= self.safety_distance:
+                    self.twist.angular.z = 4.5
+
             else:
                 self.twist.angular.z = 0.0
             self.pub.publish(self.twist)
