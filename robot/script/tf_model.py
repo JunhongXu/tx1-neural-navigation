@@ -15,7 +15,8 @@ This class load a picle file which stores dictionary of parameters {param.name: 
 
 
 class NeuralCommander(object):
-    def __init__(self, inpt_size=(128, 128, 3)):
+    def __init__(self, inpt_size=(128, 128, 3), safety_constraint=0.7):
+        self.safety_constraint = safety_constraint
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
         # two elements, first one is velocity, last one is rotation
@@ -55,10 +56,16 @@ class NeuralCommander(object):
     def predict(self, sess, x):
         # predict the primary policy and feature vector
         primary_pi, feature = sess.run([self.pi, self.layers[-3]], feed_dict={self.x: x, self.is_training: False})
+        primary_pi = primary_pi[0]
 
         # predict the safety policy
-        safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})
-        return primary_pi, safety
+        safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
+
+        # velocity depends on the safety value
+        linear = self.safety_constraint * (1 - safety[0]) * primary_pi[0]
+        angular = primary_pi[1]
+        v = np.array([linear, angular])
+        return v, safety
 
     def save(self, sess):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')

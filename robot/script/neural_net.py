@@ -61,8 +61,8 @@ class NeuralNet(object):
             x = self.bridge.imgmsg_to_cv2(data)
             x = cv2.resize(x, (128, 128))
             primary_pi, safety_pi = self.model.predict(self.sess, x.reshape(1, 128, 128, 3))
-            twist.linear.x = primary_pi[0][0]*0.5
-            twist.angular.z = primary_pi[0][1]*4.25
+            twist.linear.x = primary_pi[0]*0.5
+            twist.angular.z = primary_pi[1]*4.25
 
             if safety_pi > 0.85:
                 rospy.loginfo('[!]UNSAFE SITUATION DETECTED! %s')

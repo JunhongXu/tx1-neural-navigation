@@ -3,10 +3,11 @@ from __future__ import absolute_import
 from __future__ import division
 import tensorflow as tf
 from tensorflow.contrib import layers
-
+import numpy as np
 
 class NeuralCommander(object):
-    def __init__(self, batch_size=128, alpha=1.0, beta=0.4, inpt_size=(128, 128, 3)):
+    def __init__(self, batch_size=128, alpha=1.0, beta=0.4, safety_constraint=0.7, inpt_size=(128, 128, 3)):
+        self.safety_constraint = safety_constraint
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
         # two elements, first one is velocity, last one is rotation
@@ -57,17 +58,22 @@ class NeuralCommander(object):
     def predict(self, sess, x):
         # predict the primary policy and feature vector
         primary_pi, feature = sess.run([self.pi, self.layers[-3]], feed_dict={self.x: x, self.is_training: False})
-
+        primary_pi = primary_pi[0]
         # predict the safety policy
-        safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})
-        return primary_pi, safety
+        safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
+
+        # velocity depends on the safety value
+        linear = (1 - self.safety_constraint *  safety[0]) * primary_pi[0]
+        angular = primary_pi[1]
+        v = np.array([linear, angular])
+
+        return v, safety
 
     def save(self, sess, num_iter):
         self.saver.save(sess, save_path='../checkpoint/%s/cnn-model' % num_iter)
         print('[*]Completely saved model.')
 
     def restore(self, sess, num_iter):
-        import os
         ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/' % num_iter)
         print(ckpt.model_checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:
