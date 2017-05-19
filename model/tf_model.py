@@ -62,9 +62,11 @@ class NeuralCommander(object):
         v = primary_pi[0]
         # predict the safety policy
         safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
-        if safety > 0.98:
+        if safety >= 0.99:
             # velocity depends on the safety value
-            linear = -self.safety_constraint*np.log(safety[0]) * v[0] +0.01
+            linear = -self.safety_constraint*np.log(safety[0]) * v[0]
+            if linear < 0:
+                linear = 0
             angular = v[1]
             v = np.array([linear, angular])
 
