@@ -59,14 +59,14 @@ class NeuralCommander(object):
     def predict(self, sess, x):
         # predict the primary policy and feature vector
         primary_pi, feature = sess.run([self.pi, self.layers[-3]], feed_dict={self.x: x, self.is_training: False})
-        primary_pi = primary_pi[0]
+        v = primary_pi[0]
         # predict the safety policy
         safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
-
-        # velocity depends on the safety value
-        linear = -np.log(self.safety_constraint + safety[0]) * primary_pi[0]
-        angular = primary_pi[1]
-        v = np.array([linear, angular])
+        if safety > 0.95:
+            # velocity depends on the safety value
+            linear = -np.log(safety[0]) * v[0]
+            angular = v[1]
+            v = np.array([linear, angular])
 
         return v, safety
 
