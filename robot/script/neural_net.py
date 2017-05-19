@@ -68,9 +68,10 @@ class NeuralNet(object):
                 rospy.loginfo('[!]UNSAFE SITUATION DETECTED! %s')
                 self.safe = False
             else:
-                rospy.loginfo('[*]Angular velocity: %s' % twist.angular.z)
-                rospy.loginfo('[*]Linear velocity: %s' % twist.linear.x)
+
                 self.safe = True
+            rospy.loginfo('[*]Angular velocity: %s' % twist.angular.z)
+            rospy.loginfo('[*]Linear velocity: %s' % twist.linear.x)
             rospy.loginfo('[*]Safety value %s' % safety_pi)
             # publish safety situation
             safety = Bool()
