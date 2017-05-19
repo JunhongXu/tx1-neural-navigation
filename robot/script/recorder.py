@@ -133,7 +133,7 @@ class Recorder(object):
             with open('../frames.csv', 'a') as f:
                 f.write('\n{}'.format(frames))
 
-        if not os.path.exists('../speed.csv', 'w'):
+        if not os.path.exists('../speed.csv'):
             with open('../speed.csv', 'w')as f:
                 f.write(crashed_speed)
         else:
