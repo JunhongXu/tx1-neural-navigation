@@ -15,7 +15,7 @@ This class load a picle file which stores dictionary of parameters {param.name: 
 
 
 class NeuralCommander(object):
-    def __init__(self, inpt_size=(128, 128, 3), safety_constraint=0.1):
+    def __init__(self, inpt_size=(128, 128, 3), safety_constraint=0.01):
         self.safety_constraint = safety_constraint
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
