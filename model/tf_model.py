@@ -6,7 +6,7 @@ from tensorflow.contrib import layers
 import numpy as np
 
 class NeuralCommander(object):
-    def __init__(self, batch_size=128, alpha=1.0, beta=0.4, safety_constraint=0.01, inpt_size=(128, 128, 3)):
+    def __init__(self, batch_size=128, alpha=1.0, beta=0.4, safety_constraint=2, inpt_size=(128, 128, 3)):
         self.safety_constraint = safety_constraint
         self.x = tf.placeholder(shape=(None, ) + inpt_size, name='image', dtype=tf.float32)
         self.safety_inpt = tf.placeholder(shape=(None, 256), dtype=tf.float32, name='safety_inpt')
@@ -62,9 +62,9 @@ class NeuralCommander(object):
         v = primary_pi[0]
         # predict the safety policy
         safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
-        if safety > 0.95:
+        if safety > 0.98:
             # velocity depends on the safety value
-            linear = -np.log(safety[0]) * v[0]
+            linear = -self.safety_constraint*np.log(safety[0]) * v[0]
             angular = v[1]
             v = np.array([linear, angular])
 
