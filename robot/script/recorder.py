@@ -56,6 +56,7 @@ class Recorder(object):
         self.num_crashes = 0
         self.num_frames = 0
         self.total_frame = 0
+        self.crashed_speed = 0
         self.neural_net_on = False
         # pre-stored frames and controls
         self.stored_data = deque(maxlen=5)
@@ -99,6 +100,7 @@ class Recorder(object):
             if data.is_left_pressed or data.is_right_pressed:
                 # store images
                 self.num_crashes += 1
+                self.crashed_speed += self.twist.linear.x
                 rospy.loginfo('[*]Saving bumper images')
                 with self.bumper_lock:
                     for timestamp, control, img in self.stored_data:
@@ -112,6 +114,10 @@ class Recorder(object):
     def shutdown(self):
         crashes = '{}, {}'.format(self.train_iter, self.num_crashes)
         frames = '{}, {}, {}'.format(self.train_iter, self.num_frames, self.total_frame)
+        try:
+            crashed_speed = '{}, {}'.format(self.train_iter, self.crashed_speed/self.num_crashes)
+        except:
+            crashed_speed = '{}, {}'.format(self.train_iter, 0)
         rospy.loginfo('[*]Saving data...')
         if not os.path.exists('../crashes.csv'):
             with open('../crashes.csv', 'w') as f:
@@ -126,6 +132,13 @@ class Recorder(object):
         else:
             with open('../frames.csv', 'a') as f:
                 f.write('\n{}'.format(frames))
+
+        if not os.path.exists('../speed.csv', 'w'):
+            with open('../speed.csv', 'w')as f:
+                f.write(crashed_speed)
+        else:
+            with open('../speed.csv', 'a') as f:
+                f.write('\n{}'.format(crashed_speed))
 
     def update_depth_control(self, data):
         self.depth_twist = data

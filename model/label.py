@@ -148,7 +148,6 @@ class Label(object):
                 break
 
 
-
 if __name__ == '__main__':
     label = Label(1)
     label.change_labels()
