@@ -83,11 +83,10 @@ def convert_labels(sess, model, safe_img, reference_label, threshhold, randomize
     return x, y
 
 
-def convert_to_pkl(train_iter):
+def convert_to_pkl(model, train_iter):
     """Save tensorflow model to a pickle file"""
     params = {}
     with tf.Session() as sess:
-        model = NeuralCommander(128)
         model.restore(sess, train_iter)
         for v in model.params:
             params[v.name] = sess.run(v)

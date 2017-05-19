@@ -95,10 +95,11 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         model = NeuralCommander(BATCH_SIZE)
         # trainer for primary policy
+        s = 'gradient_norm'
         primary_policy_trainer = optimize_loss(
             model.loss, model.global_pi_setp, learning_rate=0.0005, name='primary_optimizer',
             optimizer='Adam', variables=[v for v in tf.trainable_variables() if 'cnn' in v.name],
-            summaries='gradient_norm'
+            summaries=[s]
         )
 
         # trainer for safety policy
@@ -113,7 +114,7 @@ if __name__ == '__main__':
         if TRAIN_ITER > 0:
             model.restore(sess, TRAIN_ITER-1)
 
-        train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
-    convert_to_pkl(TRAIN_ITER)
+        # train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
+    convert_to_pkl(model, TRAIN_ITER)
 
 

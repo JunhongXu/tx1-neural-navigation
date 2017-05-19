@@ -25,6 +25,7 @@ class NeuralCommander(object):
         self.safety_pi = self.build_safety()
 
         self.safety_logit = tf.nn.sigmoid(self.safety_pi)
+        v = -tf.log(self.safety_constraint + self.safety_logit) * self.pi[:, 0]
 
         self.params = tf.trainable_variables()
         # print all parameters and ops
