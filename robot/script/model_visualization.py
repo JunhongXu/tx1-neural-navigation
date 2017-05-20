@@ -26,7 +26,7 @@ class Visualizer(object):
         cwd = os.path.join(cwd, '..')
         os.chdir(cwd)
         self.layers = self.model.layers[:7][::2]
-        if iteration > 0:
+        if iteration >= 0:
             self.model.restore(self.sess, iteration)
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.visualize)
@@ -82,7 +82,7 @@ class Visualizer(object):
 
 if __name__ == '__main__':
     try:
-        viz = Visualizer()
+        viz = Visualizer(iteration=1)
     except rospy.ROSInterruptException:
         pass
 
