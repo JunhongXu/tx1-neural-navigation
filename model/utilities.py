@@ -14,13 +14,13 @@ def __split_name(labels, name):
     return v, r
 
 
-def load_data(iteration, val_num=200, read_rgb=True, read_depth=False, display=False, safety=False):
+def load_data(iteration, val_num=200, prototype=2, read_rgb=True, read_depth=False, display=False, safety=False):
     """Read all images in RGB and DEPTH"""
     rgb_imgs = []
     rgb_labels = []
     depth_imgs = []
     depth_labels = []
-    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/'
+    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/prototype-{}'.format(prototype)
     filedir = os.path.join(filedir, 'safety' if safety else 'primary')
     print(filedir)
 
@@ -80,6 +80,7 @@ def convert_labels(sess, model, safe_img, reference_label, threshhold, randomize
     # features
     x = np.array(safety_features)
     x = np.squeeze(x, axis=1)
+    print('Safe/Unsafe = {}'.format(y[y==0].shape[0]/y[y==1].shape[0]))
     return x, y
 
 

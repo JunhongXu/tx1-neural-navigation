@@ -6,11 +6,11 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 1
+TRAIN_ITER = 0
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0025
 DISPLAY = False
-NUM_ITERS = 25000
+NUM_ITERS = 10000
 RANDOMIZE = True
 P = 0.3
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         if TRAIN_ITER > 0:
             model.restore(sess, TRAIN_ITER-1)
 
-        # train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
+        train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
     convert_to_pkl(model, TRAIN_ITER)
 
 
