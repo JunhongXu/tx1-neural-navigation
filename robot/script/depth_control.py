@@ -76,7 +76,7 @@ class DepthController(object):
                 elif np.sum(left_win) >= np.sum(right_win):
                     self.twist.angular.z = 4.5*self.count(right_win)
             # for checking ultrosonic distance
-            elif valid_points/(H*W) < 0.5:
+            elif valid_points/(H*W) < 0.7:
                 # this actually is right, have wrong setup in the hardware
                 if self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
                     self.twist.linear.x = -0.3
