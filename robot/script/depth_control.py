@@ -30,7 +30,7 @@ class DepthController(object):
         self.left_dist = 0
         self.right_dist = 0
         self.is_close = False
-        self.safety_distance = 25
+        self.safety_distance = 30
         # depth
         rospy.Subscriber('/zed/depth/depth_registered', Image, self.update_depth)
         rospy.Subscriber('/distance_left', Float32, self.update_left_distance)
@@ -80,7 +80,6 @@ class DepthController(object):
                 # this actually is right, have wrong setup in the hardware
                 if self.right_dist <= self.safety_distance and self.left_dist <=self.safety_distance:
                     self.twist.linear.x = -0.3
-                    print('GO BACK!!!!!!')
                     self.twist.angular.z = 0.0
                 elif self.right_dist <= self.safety_distance:
                     self.twist.linear.x = 0.3
