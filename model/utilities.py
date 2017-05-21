@@ -84,13 +84,12 @@ def convert_labels(sess, model, safe_img, reference_label, threshhold, randomize
     return x, y
 
 
-def convert_to_pkl(model, train_iter):
+def convert_to_pkl(model, sess, train_iter):
     """Save tensorflow model to a pickle file"""
     params = {}
-    with tf.Session() as sess:
-        model.restore(sess, train_iter)
-        for v in model.params:
-            params[v.name] = sess.run(v)
+    # model.restore(sess, train_iter)
+    for v in model.params:
+        params[v.name] = sess.run(v)
     with open('../checkpoint/%s/pkl_model.pkl' % train_iter, 'wb') as f:
         pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
     print('[*]Saved to pkl file')

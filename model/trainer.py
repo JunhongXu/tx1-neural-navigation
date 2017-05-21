@@ -6,11 +6,11 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 0
+TRAIN_ITER = 1
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0025
 DISPLAY = False
-NUM_ITERS = 10000
+NUM_ITERS = 20000
 RANDOMIZE = True
 P = 0.3
 
@@ -93,6 +93,7 @@ def train(sess, model, trainer, safety_trainer, num_iter):
 
 if __name__ == '__main__':
     with tf.Session() as sess:
+        print(sess)
         model = NeuralCommander(BATCH_SIZE)
         # trainer for primary policy
         s = 'gradient_norm'
@@ -109,12 +110,11 @@ if __name__ == '__main__':
         )
 
         # initialize all variables
-        sess.run(tf.global_variables_initializer())
-
         if TRAIN_ITER > 0:
-            model.restore(sess, TRAIN_ITER-1)
-
-        train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
-    convert_to_pkl(model, TRAIN_ITER)
+            model.restore(sess, TRAIN_ITER)
+        else:
+            sess.run(tf.global_variables_initializer())
+        # train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
+        convert_to_pkl(model, sess, TRAIN_ITER)
 
 

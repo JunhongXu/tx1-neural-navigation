@@ -36,7 +36,7 @@ class Label(object):
 
     def read_names (self, iteration):
         # read all image names
-        filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/primary/RGB_DATA/%s' % iteration
+        filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/prototype-2/primary/RGB_DATA/%s' % iteration
         names = glob.glob(os.path.join(filedir, '*.png'))
         print('Found %s images' % len(names))
         return names
