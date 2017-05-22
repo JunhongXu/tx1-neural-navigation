@@ -7,7 +7,7 @@ NeuralNet publishes to 'neural_cmd' topic which is being subscribed by commander
 """
 
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32
 from sensor_msgs.msg import Image, Joy
 from geometry_msgs.msg import Twist
 from tf_model import NeuralCommander
@@ -27,6 +27,7 @@ class NeuralNet(object):
         self.neural_net_on = False
         self.twist_cmd = rospy.Publisher('/neural_cmd', Twist, queue_size=5)
         self.safety_cmd = rospy.Publisher('/safety', Bool, queue_size=5)
+        self.safety_value = rospy.Publisher('/safety_value', Float32, queue_size=5)
         self.sess = tf.Session()
         if train_iter > 0:
             self.model.restore(self.sess, self.train_iter-1)
@@ -63,7 +64,7 @@ class NeuralNet(object):
             primary_pi, safety_pi = self.model.predict(self.sess, x.reshape(1, 128, 128, 3))
             twist.linear.x = primary_pi[0]*0.5
             twist.angular.z = primary_pi[1]*4.25
-
+            self.safety_value.publish(Float32(safety_pi[0]))
             if safety_pi > 0.95:
                 rospy.loginfo('[!]UNSAFE SITUATION DETECTED! %s')
                 self.safe = False

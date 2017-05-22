@@ -2,7 +2,9 @@
 
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image
+from std_msgs.msg import Float32
 import tensorflow as tf
 import cv2
 from tensorflow.contrib.layers import *
@@ -28,10 +30,19 @@ class Visualizer(object):
         self.layers = self.model.layers[:7][::2]
         if iteration >= 0:
             self.model.restore(self.sess, iteration)
-
+        self.safety_value = Float32()
+        self.twist = Twist()
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.visualize)
+        rospy.Subscriber('/neural_cmd', Twist, callback=self.get_twist)
+        rospy.Subscriber('/safety_value', Float32, callback=self.get_safety)
         rospy.init_node('visualizer')
         rospy.spin()
+
+    def get_twist(self, data):
+        self.twist = data
+
+    def get_safety(self, data):
+        self.safety_value = data
 
     def __build_deconv(self):
         feature0 = tf.placeholder(dtype=tf.float32, shape=[None, 16, 16, 1])
@@ -59,7 +70,8 @@ class Visualizer(object):
 
     def overaly(self, feat, x):
         idx = np.where(np.squeeze(feat) >= 0.05)
-        x[idx] = [0, 0, 255] * (1- x[idx])
+        x[idx] = [0, 0, 255] * (1 - x[idx])
+        x = cv2.copyMakeBorder(x, 15, 0, 30, 30, cv2.BORDER_CONSTANT, value=(0, 0, 0))
         cv2.imshow('feature', cv2.resize(feat, (256, 256)))
         cv2.imshow('image', cv2.resize(x, (256, 256)))
         cv2.waitKey(10)
