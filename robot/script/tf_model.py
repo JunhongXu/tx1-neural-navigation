@@ -67,7 +67,7 @@ class NeuralCommander(object):
             linear = v[0]
         angular = v[1]
         v = np.array([linear, angular])
-        return v, safety
+        return primary_pi[0], safety
 
     def save(self, sess):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')

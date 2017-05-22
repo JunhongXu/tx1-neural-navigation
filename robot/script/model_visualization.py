@@ -70,7 +70,7 @@ class Visualizer(object):
         features = self.sess.run(self.layers, feed_dict={self.model.x: x.reshape(1, 128, 128, 3)})
         f3, f2, f1, f0 =np.mean(features[0], axis=-1), np.mean(features[1], axis=-1), np.mean(features[2], axis=-1), \
                         np.mean(features[3], axis=-1)
-        combined_feat = self.sess.run(self.map, feed_dict={
+        combined_feat = self.sess.run(self.map,  feed_dict={
             self.f0: np.expand_dims(f0, axis=-1),
             self.f1: np.expand_dims(f1, axis=-1),
             self.f2: np.expand_dims(f2, axis=-1),
@@ -82,7 +82,7 @@ class Visualizer(object):
 
 if __name__ == '__main__':
     try:
-        viz = Visualizer(iteration=0)
+        viz = Visualizer(iteration=1)
     except rospy.ROSInterruptException:
         pass
 
