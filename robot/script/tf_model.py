@@ -66,7 +66,7 @@ class NeuralCommander(object):
         if safety <= 0.5:
             linear = v[0]
         angular = v[1]
-        v = np.array([linear, angular])
+        # v = np.array([linear, angular])
         return primary_pi[0], safety
 
     def save(self, sess):
