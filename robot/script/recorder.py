@@ -160,7 +160,7 @@ class Recorder(object):
     def save_odom(self, odom):
         pose = odom.pose.pose
         x = pose.position.x
-        distance = x - self.previous_x
+        distance = abs(x - self.previous_x)
         self.previous_x = x
         self.distance_travelled += distance
         print(self.distance_travelled)
