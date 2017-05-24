@@ -71,9 +71,14 @@ class Visualizer(object):
     def overaly(self, feat, x):
         idx = np.where(np.squeeze(feat) >= 0.05)
         x[idx] = [0, 0, 255] * (1 - x[idx])
-        x = cv2.copyMakeBorder(x, 15, 0, 30, 30, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        safety = self.safety_value.data
+        # print(safety)
+        x = cv2.resize(x, (256, 256))
+        x = cv2.copyMakeBorder(x, 15, 0, 100, 100, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        cv2.rectangle(x, (0, 0), (int(256*safety), 15), (51, 255, 51), thickness=-1)
+        # cv2.rectangle(x, )
         cv2.imshow('feature', cv2.resize(feat, (256, 256)))
-        cv2.imshow('image', cv2.resize(x, (256, 256)))
+        cv2.imshow('image', x)
         cv2.waitKey(10)
 
     def visualize(self, data):
@@ -94,7 +99,7 @@ class Visualizer(object):
 
 if __name__ == '__main__':
     try:
-        viz = Visualizer(iteration=1)
+        viz = Visualizer(iteration=2)
     except rospy.ROSInterruptException:
         pass
 

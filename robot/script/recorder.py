@@ -28,22 +28,22 @@ import os
 from threading import Lock
 from controller import PS3
 import sys
-import numpy as np
+import time
 from ca_msgs.msg import Bumper
 from collections import deque
 
 
 class Recorder(object):
-    def __init__(self, train_iter):
+    def __init__(self, train_iter, threshold):
         rospy.loginfo('[*]Start recorder.')
         self.record = False
         self.bridge = CvBridge()
         self.train_iter = train_iter
         # create folders
-        self.SAFETY_RGB_PATH = '../safety/RGB_DATA/%s' % train_iter
-        self.SAFETY_DEPTH_PATH = '../safety/DEPTH_DATA/%s' % train_iter
-        self.DEPTH_PATH = '../primary/DEPTH_DATA/%s' % train_iter
-        self.RGB_PATH = '../primary/RGB_DATA/%s' % train_iter
+        self.SAFETY_RGB_PATH = '../%s/safety/RGB_DATA/%s' % (threshold, train_iter)
+        self.SAFETY_DEPTH_PATH = '../%s/safety/DEPTH_DATA/%s' % (threshold, train_iter)
+        self.DEPTH_PATH = '../%s/primary/DEPTH_DATA/%s' % (threshold, train_iter)
+        self.RGB_PATH = '../%s/primary/RGB_DATA/%s' % (threshold, train_iter)
         self.create_folders()
         # self.twist_lock = Lock()
         self.controller = PS3()
@@ -53,13 +53,18 @@ class Recorder(object):
         self.twist = Twist()
         self.depth_twist = Twist()
         self.avoided = True
-        self.num_crashes = 0
-        self.num_frames = 0
-        self.total_frame = 0
-        self.crashed_speed = 0
+        self.start_time = 0
+        self.end_time = 0
+        self.data_name = 'Iter_%s' % train_iter
+        self.distance_travelled = 0
+        self.curr_x = self.previous_x = 0.0
+        self.total_speed = 0
         self.neural_net_on = False
+        self.human_on = False
+        self.depth_on = False
+        self.num_crashes = 0
         # pre-stored frames and controls
-        self.stored_data = deque(maxlen=5)
+        self.stored_data = deque(maxlen=8)
         self.bumper_lock = Lock()
 
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, self.save_rgb)
@@ -81,16 +86,33 @@ class Recorder(object):
 
         rospy.Subscriber('/toggle_nn', Bool, self.is_nn_on)
 
+        rospy.Subscriber('/toggle_human', Bool, self.is_human_on)
+
+        rospy.Subscriber('/toggle_depth', Bool, self.is_depth_on)
+
         rospy.init_node('recorder')
 
         rospy.on_shutdown(self.shutdown)
         # keeps the node alive
         rospy.spin()
 
+    def is_human_on(self, data):
+        if data.data is True:
+            rospy.loginfo('[*]Human Testing...')
+            self.data_name = 'Human'
+            self.start_time = time.time()
+
+    def is_depth_on(self, data):
+        if data.data is True:
+            rospy.loginfo('[*]Depth Testing...')
+            self.data_name = 'Depth'
+            self.start_time = time.time()
+
     def is_nn_on(self, data):
         if data.data is True:
             rospy.loginfo('[*]Recorder: Neural Network ON')
             self.neural_net_on = True
+            self.start_time = time.time()
         else:
             rospy.loginfo('[*]Recorder: Neural Network ON')
             self.neural_net_on = False
@@ -98,13 +120,13 @@ class Recorder(object):
     def bumper(self, data):
         if self.neural_net_on:
             if data.is_left_pressed or data.is_right_pressed:
+                self.end_time = time.time()
                 # store images
                 self.num_crashes += 1
-                self.crashed_speed += self.twist.linear.x
                 rospy.loginfo('[*]Saving bumper images')
                 with self.bumper_lock:
-                    for timestamp, control, img in self.stored_data:
-                        v = control.linear.x
+                    for idx, (timestamp, control, img) in enumerate(self.stored_data):
+                        v = (-1/8)*(idx+1) + 1
                         r = control.angular.z
                         print(v, r)
                         filename = self.RGB_PATH
@@ -113,11 +135,7 @@ class Recorder(object):
 
     def shutdown(self):
         crashes = '{}, {}'.format(self.train_iter, self.num_crashes)
-        frames = '{}, {}, {}'.format(self.train_iter, self.num_frames, self.total_frame)
-        try:
-            crashed_speed = '{}, {}'.format(self.train_iter, self.crashed_speed/self.num_crashes)
-        except:
-            crashed_speed = '{}, {}'.format(self.train_iter, 0)
+
         rospy.loginfo('[*]Saving data...')
         if not os.path.exists('../crashes.csv'):
             with open('../crashes.csv', 'w') as f:
@@ -126,26 +144,25 @@ class Recorder(object):
             with open('../crashes.csv', 'a') as f:
                 f.write('\n{}'.format(crashes))
 
-        if not os.path.exists('../frames.csv'):
-            with open('../frames.csv', 'w') as f:
-                f.write(frames)
+        data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
+        if not os.path.exists('../data.csv'):
+            with open('../data.csv', 'w') as f:
+                f.write('name,dist,time')
+                f.write('\n{}'.format(data))
         else:
-            with open('../frames.csv', 'a') as f:
-                f.write('\n{}'.format(frames))
-
-        if not os.path.exists('../speed.csv'):
-            with open('../speed.csv', 'w')as f:
-                f.write(crashed_speed)
-        else:
-            with open('../speed.csv', 'a') as f:
-                f.write('\n{}'.format(crashed_speed))
+            with open('../data.csv', 'a') as f:
+                f.write('\n{}'.format(crashes))
 
     def update_depth_control(self, data):
         self.depth_twist = data
 
     # TODO: Get odometry data
     def save_odom(self, odom):
-        pass
+        pose = odom.pose.pose
+        x = pose.position.x
+        distance = x - self.previous_x
+        self.previous_x = x
+        self.distance_travelled += distance
 
     def create_folders(self):
         if not os.path.exists(self.SAFETY_RGB_PATH):
@@ -202,6 +219,7 @@ class Recorder(object):
     def get_twist(self, twist):
         # with self.twist_lock:
         self.twist = twist
+        self.total_speed += twist.linear.x
 
     def get_status(self, joy_cmd):
         self.controller.update(joy_cmd)
@@ -233,7 +251,9 @@ class Recorder(object):
 if __name__ == '__main__':
     try:
         train_iter = sys.argv[2]
+        threshold = sys.argv[4]
         print('[!]Training Iteration %s' % train_iter)
-        recorder = Recorder(train_iter)
+        print('[!]Threshold %s' % threshold)
+        recorder = Recorder(train_iter, threshold)
     except rospy.ROSInterruptException:
         pass

@@ -6,11 +6,11 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 2
+TRAIN_ITER = 0
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0025
 DISPLAY = False
-NUM_ITERS = 20000
+NUM_ITERS = 10000
 RANDOMIZE = True
 P = 0.3
 

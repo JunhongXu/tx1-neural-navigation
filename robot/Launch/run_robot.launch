@@ -1,5 +1,6 @@
 <launch>
     <arg name="iteration" default="0"/>
+    <arg name="threshold" default="0.99"/>
     <!--run zed launch file-->
     <include file="$(find zed_wrapper)/launch/zed.launch"/>
     <!--run create 2 launch file-->
@@ -14,7 +15,8 @@
 
 
     <!--run recorder-->
-    <node pkg="robot" type="recorder.py" name="recorder" output="screen" args="--iteration $(arg iteration)"
+    <node pkg="robot" type="recorder.py" name="recorder" output="screen" args="--iteration $(arg iteration)
+    --threshold $(arg threshold)"
           cwd="node"/>
 
     <node pkg="robot" type="commander.py" name="commander" output="screen"/>

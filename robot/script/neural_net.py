@@ -20,9 +20,10 @@ from ca_msgs.msg import Bumper
 
 
 class NeuralNet(object):
-    def __init__(self, train_iter):
+    def __init__(self, train_iter, threshold):
         rospy.loginfo('[*]Loading Neural Network')
         self.train_iter = train_iter
+        self.threshold = threshold
         self.model = NeuralCommander()
         self.neural_net_on = False
         self.twist_cmd = rospy.Publisher('/neural_cmd', Twist, queue_size=5)
@@ -65,7 +66,7 @@ class NeuralNet(object):
             twist.linear.x = primary_pi[0]*0.5
             twist.angular.z = primary_pi[1]*4.25
             self.safety_value.publish(Float32(safety_pi[0]))
-            if safety_pi > 0.95:
+            if safety_pi > self.threshold:
                 rospy.loginfo('[!]UNSAFE SITUATION DETECTED! %s')
                 self.safe = False
             else:
@@ -84,6 +85,7 @@ class NeuralNet(object):
 if __name__ == '__main__':
     try:
         train_iter = int(sys.argv[2])
-        nn = NeuralNet(train_iter)
+        threshold = int(sys.argv[4])
+        nn = NeuralNet(train_iter, threshold)
     except rospy.ROSInterruptException:
         pass

@@ -55,6 +55,8 @@ class Commander(object):
         self.move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
         self.reset_pub = rospy.Publisher('/reset', Bool, queue_size=5)
         self.nn_controller = rospy.Publisher('/toggle_nn', Bool, queue_size=5)
+        self.depth_controller = rospy.Publisher('/toggle_depth', Bool, queue_size=5)
+        self.human_controller = rospy.Publisher('/toggle_human', Bool, queue_size=5)
         # initialize rosnode
         rospy.init_node('commander', anonymous=True)
         self.rate = rospy.Rate(60)
@@ -70,13 +72,13 @@ class Commander(object):
             # self.curr_x = self.prev_x = self.x
             self.bumper = True
             # reverse if encounter obstacles on both sides
-            self.desired_euler = np.pi/2
+            self.desired_euler = np.pi/8
         elif data.is_left_pressed:
             self.bumper = True
-            self.desired_euler = np.pi/4
+            self.desired_euler = np.pi/8
         elif data.is_right_pressed:
             self.bumper = True
-            self.desired_euler = np.pi/4
+            self.desired_euler = np.pi/8
         else:
             self.bumper = False
 
@@ -153,6 +155,8 @@ class Commander(object):
                 rospy.loginfo('[*]Stop depth controller')
             toggle_nn = Bool(self.neuralnet_mode)
             self.nn_controller.publish(toggle_nn)
+            self.depth_controller.publish(Bool(self.depth_mod))
+            self.human_controller.publish(Bool('L1_pressed' in btn_events))
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd
