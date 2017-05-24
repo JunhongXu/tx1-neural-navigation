@@ -63,6 +63,7 @@ class Recorder(object):
         self.human_on = False
         self.depth_on = False
         self.num_crashes = 0
+        self.saved = False
         # pre-stored frames and controls
         self.stored_data = deque(maxlen=8)
         self.bumper_lock = Lock()
@@ -120,17 +121,25 @@ class Recorder(object):
     def bumper(self, data):
         if self.neural_net_on:
             if data.is_left_pressed or data.is_right_pressed:
-                self.end_time = time.time()
-                # store images
+                if not self.saved:
+                    self.end_time = time.time()
+                    # store images
+                    data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
+                    if not os.path.exists('../data.csv'):
+                        with open('../data.csv', 'w') as f:
+                            f.write('name,dist,time')
+                            f.write('\n{}'.format(data))
+                    else:
+                        with open('../data.csv', 'a') as f:
+                            f.write('\n{}'.format(data))
+                    rospy.loginfo('[!]Saving recorded data!')
+
                 self.num_crashes += 1
                 rospy.loginfo('[*]Saving bumper images')
                 with self.bumper_lock:
                     for idx, (timestamp, control, img) in enumerate(self.stored_data):
-
                         v = (-1/8)*(idx+1) + 1
-                        print(v, idx)
                         r = control.angular.z
-                        print(v, r)
                         filename = self.RGB_PATH
                         filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
                         cv2.imwrite(filename, img)
@@ -144,15 +153,6 @@ class Recorder(object):
                 f.write(crashes)
         else:
             with open('../crashes.csv', 'a') as f:
-                f.write('\n{}'.format(crashes))
-
-        data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
-        if not os.path.exists('../data.csv'):
-            with open('../data.csv', 'w') as f:
-                f.write('name,dist,time')
-                f.write('\n{}'.format(data))
-        else:
-            with open('../data.csv', 'a') as f:
                 f.write('\n{}'.format(crashes))
 
     def update_depth_control(self, data):
