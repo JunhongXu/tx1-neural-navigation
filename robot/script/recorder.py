@@ -126,7 +126,9 @@ class Recorder(object):
                 rospy.loginfo('[*]Saving bumper images')
                 with self.bumper_lock:
                     for idx, (timestamp, control, img) in enumerate(self.stored_data):
+
                         v = (-1/8)*(idx+1) + 1
+                        print(v, idx)
                         r = control.angular.z
                         print(v, r)
                         filename = self.RGB_PATH
