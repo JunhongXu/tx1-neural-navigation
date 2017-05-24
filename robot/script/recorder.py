@@ -141,7 +141,7 @@ class Recorder(object):
                         v = (-1/8)*(idx+1) + 1
                         r = control.angular.z
                         filename = self.RGB_PATH
-                        filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v, r))
+                        filename = os.path.join(filename, '%s_%s_%s.png' % (timestamp, v*0.5, r))
                         cv2.imwrite(filename, img)
 
     def shutdown(self):
