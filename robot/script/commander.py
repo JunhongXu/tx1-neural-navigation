@@ -155,8 +155,8 @@ class Commander(object):
                 rospy.loginfo('[*]Stop depth controller')
             toggle_nn = Bool(self.neuralnet_mode)
             self.nn_controller.publish(toggle_nn)
-            self.depth_controller.publish(Bool(self.depth_mod))
-            self.human_controller.publish(Bool('L1_pressed' in btn_events))
+        self.depth_controller.publish(Bool(self.depth_mod))
+        self.human_controller.publish(Bool('L1_pressed' in btn_events))
 
     def neural_cmd(self, cmd):
         self.nn_cmd = cmd
