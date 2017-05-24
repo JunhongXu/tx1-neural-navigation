@@ -7,7 +7,7 @@
     <include file="$(find ca_driver)/launch/create_2.launch"/>
     <!--run neural network-->
     <node pkg="robot" type="depth_control.py" name="depth_control" output="screen" cwd="node"/>
-    <node pkg="robot" type="neural_net.py" name="neural_net" output="screen" args="--iteration $(arg iteration)"
+    <node pkg="robot" type="neural_net.py" name="neural_net" output="screen" args="--iteration $(arg iteration) --threshold $(arg threshold)"
           cwd="node"/>
     <node pkg="rosserial_python" type="serial_node.py" name="serial_node" output="screen" cwd="node">
             <param name="port" value="/dev/ttyACM0"/>

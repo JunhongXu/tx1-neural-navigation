@@ -84,7 +84,6 @@ class NeuralNet(object):
 
 if __name__ == '__main__':
     try:
-        print('asdfasdfdasf   %s' % sys.argv)
         train_iter = int(sys.argv[2])
         threshold = int(sys.argv[4])
         nn = NeuralNet(train_iter, threshold)
