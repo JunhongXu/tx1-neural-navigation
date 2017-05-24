@@ -163,7 +163,6 @@ class Recorder(object):
         distance = abs(x - self.previous_x)
         self.previous_x = x
         self.distance_travelled += distance
-        print(self.distance_travelled)
 
     def create_folders(self):
         if not os.path.exists(self.SAFETY_RGB_PATH):
