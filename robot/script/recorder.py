@@ -209,12 +209,10 @@ class Recorder(object):
     def save_rgb(self, rgb):
         # for bumper
         self.record_img(rgb, 'bumper', self.depth_twist)
-        self.total_frame += 1
         if self.safety_record or self.primary_record:
             self.record_img(rgb, 'rgb', self.twist)
         elif self.neural_net_on:
             if not self.safe and self.avoided:
-                self.num_frames += 1
                 self.record_img(rgb, 'rgb', self.depth_twist)
 
     def get_twist(self, twist):
