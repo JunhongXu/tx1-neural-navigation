@@ -58,7 +58,7 @@ class Recorder(object):
         self.data_name = 'Iter_%s' % train_iter
         self.distance_travelled = 0
         self.curr_x = self.previous_x = 0.0
-        self.total_speed = 0
+        self.speed = []
         self.neural_net_on = False
         self.human_on = False
         self.depth_on = False
@@ -157,6 +157,11 @@ class Recorder(object):
             with open('../data.csv', 'a') as f:
                 f.write('\n{}'.format(data))
 
+        speed = self.train_iter + ',' + ' '.join(str(s) for s in self.speed)
+        if not os.path.exists('../speed.csv'):
+            with open('../speed.csv', 'w') as f:
+                f.write('iter,speed')
+                f.write('\n{}'.format(speed))
     def update_depth_control(self, data):
         self.depth_twist = data
 
@@ -221,7 +226,7 @@ class Recorder(object):
     def get_twist(self, twist):
         # with self.twist_lock:
         self.twist = twist
-        self.total_speed += twist.linear.x
+        self.speed.append(twist.linear.x)
 
     def get_status(self, joy_cmd):
         self.controller.update(joy_cmd)
