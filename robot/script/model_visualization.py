@@ -11,7 +11,7 @@ from tensorflow.contrib.layers import *
 from model.tf_model import NeuralCommander
 import numpy as np
 import os
-
+import time
 
 class Visualizer(object):
     """
@@ -24,6 +24,7 @@ class Visualizer(object):
         self.model = NeuralCommander()
         self.f0, self.f1, self.f2, self.f3, self.map = self.__build_deconv()
         self.sess.run(tf.global_variables_initializer())
+        self.iteration = iteration
         cwd = os.getcwd()
         cwd = os.path.join(cwd, '..')
         os.chdir(cwd)
@@ -76,7 +77,6 @@ class Visualizer(object):
     def overaly(self, feat, x):
         height = self.twist.linear.x/0.5
         width = self.twist.angular.z/4.5
-        rospy.loginfo('heigh, width {} {}'.format(height, width) )
         depth_height = -self.depth_control.linear.x/0.5
         depth_width = -self.depth_control.angular.z/4.5
         idx = np.where(np.squeeze(feat) >= 0.05)
@@ -85,7 +85,7 @@ class Visualizer(object):
         # print(safety)
         x = cv2.resize(x, (256, 256))
         x = cv2.copyMakeBorder(x, 15, 0, 150, 150, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-        cv2.rectangle(x, (0, 0), (int((256+150)*safety), 15), (0, int((1 - safety)*255), int(safety * 255)), thickness=-1)
+        cv2.rectangle(x, (0, 0), (int((256+300)*safety), 15), (0, int((1 - safety)*255), int(safety * 255)), thickness=-1)
         cv2.rectangle(x, (60, int(-height*75) + 136), (90, 137), (255, 0, 0),  thickness=-1)
         if width < 0.0:
             cv2.rectangle(x, (int(-width*60)+90, 106), (90, 137), (0, 0, 255), thickness=-1)
@@ -94,14 +94,18 @@ class Visualizer(object):
         # cv2.rectangle(x, (int(-width*75)+75, 106), (76, 137), (0, 0, 255), thickness=-1)
         # cv2.rectangle(x, (60, int(-height*75) + 128), (90, 129), (255, 0, 0),  thickness=-1)
         # cv2.rectangle(x, (int(-width*75)+75, 60), (76, 90), (0, 0, 255), thickness=-1)
-        cv2.rectangle(x, (416+60, int(depth_height *75) + 136), (416+90, 137), (255, 0, 0),  thickness=-1)
+        cv2.rectangle(x, (406+60, int(depth_height *75) + 136), (406+90, 137), (255, 0, 0),  thickness=-1)
         if depth_width < 0.0:
             cv2.rectangle(x, (int(depth_width*60)+60+406, 106), (60+406, 137), (0, 0, 255), thickness=-1)
         elif depth_width > 0.0:
             cv2.rectangle(x, (int(depth_width*60)+90+406, 106), (90+406, 137), (0, 0, 255), thickness=-1)
+        cv2.putText(x, 'Neural Network Policy', (5, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.39, (255, 255, 255))
+        cv2.putText(x, 'Sensor Policy', (436, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.39, (255, 255, 255))
+        cv2.imwrite('/media/jxu7/BACK-UP/Data/neural-navigation/video_material/%s/%s.jpg' % (self.iteration, time.time()), x)
         cv2.imshow('feature', cv2.resize(feat, (256, 256)))
         cv2.imshow('image', x)
-        cv2.waitKey(10)
+
+        cv2.waitKey(1)
 
     def visualize(self, data):
         x = self.bridge.imgmsg_to_cv2(data)

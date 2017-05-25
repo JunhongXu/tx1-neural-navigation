@@ -162,10 +162,10 @@ class Recorder(object):
             with open('../speed.csv', 'w') as f:
                 f.write('iter,speed')
                 f.write('\n{}'.format(speed))
+
     def update_depth_control(self, data):
         self.depth_twist = data
 
-    # TODO: Get odometry data
     def save_odom(self, odom):
         pose = odom.pose.pose
         x = pose.position.x
@@ -226,7 +226,7 @@ class Recorder(object):
     def get_twist(self, twist):
         # with self.twist_lock:
         self.twist = twist
-        self.speed.append(twist.linear.x)
+        # self.speed.append(twist.linear.x)
 
     def get_status(self, joy_cmd):
         self.controller.update(joy_cmd)
