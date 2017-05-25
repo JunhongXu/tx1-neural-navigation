@@ -32,11 +32,16 @@ class Visualizer(object):
             self.model.restore(self.sess, iteration)
         self.safety_value = Float32()
         self.twist = Twist()
+        self.depth_control = Twist()
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.visualize)
+        rospy.Subscriber('/depth_control', Twist, callback=self.depth_control)
         rospy.Subscriber('/neural_cmd', Twist, callback=self.get_twist)
         rospy.Subscriber('/safety_value', Float32, callback=self.get_safety)
         rospy.init_node('visualizer')
         rospy.spin()
+
+    def depth_control(self, data):
+        self.depth_control = data
 
     def get_twist(self, data):
         self.twist = data
@@ -69,14 +74,21 @@ class Visualizer(object):
         return feature0, feature1, feature2, feature3, combined_feat3
 
     def overaly(self, feat, x):
+        height = self.twist.linear.x/0.5
+        width = self.twist.angular.z/4.5
+        depth_height = self.depth_control.linear.x/0.5
+        depth_width = self.depth_control.angular.z/4.5
         idx = np.where(np.squeeze(feat) >= 0.05)
         x[idx] = [0, 0, 255] * (1 - x[idx])
         safety = self.safety_value.data
         # print(safety)
         x = cv2.resize(x, (256, 256))
-        x = cv2.copyMakeBorder(x, 15, 0, 100, 100, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-        cv2.rectangle(x, (0, 0), (int(256*safety), 15), (51, 255, 51), thickness=-1)
-        # cv2.rectangle(x, )
+        x = cv2.copyMakeBorder(x, 15, 0, 150, 150, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        cv2.rectangle(x, (0, 0), (int((256+150)*safety), 15), (0, int((1 - safety)*255), int(safety * 255)), thickness=-1)
+        cv2.rectangle(x, (60, int(-height*128) + 128), (90, 129), (255, 0, 0),  thickness=-1)
+        cv2.rectangle(x, (int(-width*75)+75, 60), (76, 90), (0, 0, 255), thickness=-1)
+        cv2.rectangle(x, (416+60, int(depth_height *75) + 136), (416+90, 137), (255, 0, 0),  thickness=-1)
+        cv2.rectangle(x, (int(depth_width*75)+75+416, 106), (76+416, 137), (0, 0, 255), thickness=-1)
         cv2.imshow('feature', cv2.resize(feat, (256, 256)))
         cv2.imshow('image', x)
         cv2.waitKey(10)
@@ -99,7 +111,7 @@ class Visualizer(object):
 
 if __name__ == '__main__':
     try:
-        viz = Visualizer(iteration=2)
+        viz = Visualizer(iteration=1)
     except rospy.ROSInterruptException:
         pass
 

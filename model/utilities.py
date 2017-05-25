@@ -14,13 +14,13 @@ def __split_name(labels, name):
     return v, r
 
 
-def load_data(iteration, val_num=200, prototype=2, read_rgb=True, read_depth=False, display=False, safety=False):
+def load_data(iteration, val_num=200, threshold=0.99, prototype=2, read_rgb=True, read_depth=False, display=False, safety=False):
     """Read all images in RGB and DEPTH"""
     rgb_imgs = []
     rgb_labels = []
     depth_imgs = []
     depth_labels = []
-    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/prototype-{}'.format(prototype)
+    filedir = '/media/jxu7/BACK-UP/Data/neural-navigation/prototype-{}/{}'.format(prototype, threshold)
     filedir = os.path.join(filedir, 'safety' if safety else 'primary')
     print(filedir)
 
