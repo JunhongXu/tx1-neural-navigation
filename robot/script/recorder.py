@@ -93,6 +93,8 @@ class Recorder(object):
 
         rospy.init_node('recorder')
 
+        self.start_time = time.time()
+
         rospy.on_shutdown(self.shutdown)
         # keeps the node alive
         rospy.spin()
@@ -113,7 +115,6 @@ class Recorder(object):
         if data.data is True:
             rospy.loginfo('[*]Recorder: Neural Network ON')
             self.neural_net_on = True
-            self.start_time = time.time()
         else:
             rospy.loginfo('[*]Recorder: Neural Network ON')
             self.neural_net_on = False
