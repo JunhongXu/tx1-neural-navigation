@@ -148,7 +148,6 @@ class Recorder(object):
 
         self.end_time = time.time()
         data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
-        print(data)
         if not os.path.exists('../data.csv'):
             with open('../data.csv', 'w') as f:
                 f.write('name,dist,time')
