@@ -147,8 +147,8 @@ class Recorder(object):
                 f.write('\n{}'.format(crashes))
 
         self.end_time = time.time()
-        # store images
         data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
+        print(data)
         if not os.path.exists('../data.csv'):
             with open('../data.csv', 'w') as f:
                 f.write('name,dist,time')
@@ -167,11 +167,12 @@ class Recorder(object):
         self.depth_twist = data
 
     def save_odom(self, odom):
-        pose = odom.pose.pose
-        x = pose.position.x
-        distance = abs(x - self.previous_x)
-        self.previous_x = x
-        self.distance_travelled += distance
+        if self.human_on or self.depth_on or self.neural_net_on:
+            pose = odom.pose.pose
+            x = pose.position.x
+            distance = abs(x - self.previous_x)
+            self.previous_x = x
+            self.distance_travelled += distance
 
     def create_folders(self):
         if not os.path.exists(self.SAFETY_RGB_PATH):

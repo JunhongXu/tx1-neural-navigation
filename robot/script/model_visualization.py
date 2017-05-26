@@ -91,9 +91,6 @@ class Visualizer(object):
             cv2.rectangle(x, (int(-width*60)+90, 106), (90, 137), (0, 0, 255), thickness=-1)
         elif width > 0.0:
             cv2.rectangle(x, (int(-width*60)+60, 106), (60, 137), (0, 0, 255), thickness=-1)
-        # cv2.rectangle(x, (int(-width*75)+75, 106), (76, 137), (0, 0, 255), thickness=-1)
-        # cv2.rectangle(x, (60, int(-height*75) + 128), (90, 129), (255, 0, 0),  thickness=-1)
-        # cv2.rectangle(x, (int(-width*75)+75, 60), (76, 90), (0, 0, 255), thickness=-1)
         cv2.rectangle(x, (406+60, int(depth_height *75) + 136), (406+90, 137), (255, 0, 0),  thickness=-1)
         if depth_width < 0.0:
             cv2.rectangle(x, (int(depth_width*60)+60+406, 106), (60+406, 137), (0, 0, 255), thickness=-1)
