@@ -121,6 +121,7 @@ class Recorder(object):
 
     def bumper(self, data):
         if data.is_left_pressed or data.is_right_pressed:
+            rospy.loginfo('Saving')
             if not self.saved:
                 rospy.loginfo('[!]Saving recorded data!')
                 self.end_time = time.time()
