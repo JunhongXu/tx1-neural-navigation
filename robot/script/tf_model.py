@@ -59,21 +59,17 @@ class NeuralCommander(object):
         v = primary_pi[0]
         # predict the safety policy
         safety = sess.run(self.safety_logit, feed_dict={self.safety_inpt: feature, self.is_training: False})[0]
-        linear = (-safety[0]**2+1) * v[0]
-        if safety >= 0.99:
-            # velocity depends on the safety value
-            linear = max(0.1, linear)
-        if safety <= 0.5:
-            linear = v[0]
-        angular = v[1]
-        # v = np.array([linear, angular])
         return primary_pi[0], safety
 
     def save(self, sess):
         self.saver.save(sess, save_path='../../checkpoint/cnn-model')
 
-    def restore(self, sess, NUM_ITER):
-        with open('../../checkpoint/%s/pkl_model.pkl' % NUM_ITER, 'rb') as f:
+    def restore(self, sess, NUM_ITER, threshold=0.99):
+        if threshold != 0.99:
+            path = '../../checkpoint/%s/%s/pkl_model.pkl' % (threshold, NUM_ITER)
+        else:
+            path = '../../checkpoint/%s/pkl_model.pkl' % NUM_ITER
+        with open(path, 'rb') as f:
             params = pickle.load(f)
             # restore
             keys = sorted(params.keys())

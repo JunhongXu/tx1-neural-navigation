@@ -31,7 +31,7 @@ class NeuralNet(object):
         self.safety_value = rospy.Publisher('/safety_value', Float32, queue_size=5)
         self.sess = tf.Session()
         if train_iter > 0:
-            self.model.restore(self.sess, self.train_iter-1)
+            self.model.restore(self.sess, self.train_iter-1, threshold=threshold)
         else:
             self.sess.run(tf.initialize_all_variables())
         self.bridge = cv_bridge.CvBridge()

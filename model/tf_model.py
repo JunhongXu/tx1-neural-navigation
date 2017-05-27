@@ -65,12 +65,18 @@ class NeuralCommander(object):
 
         return v, safety
 
-    def save(self, sess, num_iter):
-        self.saver.save(sess, save_path='../checkpoint/%s/cnn-model' % num_iter)
+    def save(self, sess, num_iter, threshold=0.99):
+        if threshold != 0.99:
+            path = '../checkpoint/%s/%scnn-model' % (threshold, num_iter)
+        else:
+            self.saver.save(sess, save_path='../checkpoint/%s/cnn-model' % num_iter)
         print('[*]Completely saved model.')
 
-    def restore(self, sess, num_iter):
-        ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/' % num_iter)
+    def restore(self, sess, num_iter, threshold=0.99):
+        if threshold != 0.99:
+            ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/%s' % (threshold, num_iter))
+        else:
+            ckpt = tf.train.get_checkpoint_state('../checkpoint/%s/' % num_iter)
         print(ckpt.model_checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:
             self.saver.restore(sess, ckpt.model_checkpoint_path)
