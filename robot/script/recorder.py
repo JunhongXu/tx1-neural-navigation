@@ -120,20 +120,22 @@ class Recorder(object):
             self.neural_net_on = False
 
     def bumper(self, data):
+        if data.is_left_pressed or data.is_right_pressed:
+            if not self.saved:
+                rospy.loginfo('[!]Saving recorded data!')
+                self.end_time = time.time()
+                d = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
+                if not os.path.exists('../data.csv'):
+                    with open('../data.csv', 'w') as f:
+                        f.write('name,dist,time')
+                        f.write('\n{}'.format(d))
+                else:
+                    with open('../data.csv', 'a') as f:
+                        f.write('\n{}'.format(d))
+                self.saved = True
         if self.neural_net_on:
             if data.is_left_pressed or data.is_right_pressed:
-                if not self.saved:
-                    rospy.loginfo('[!]Saving recorded data!')
-                    self.end_time = time.time()
-                    data = '{}, {}, {}'.format(self.data_name, self.distance_travelled, self.end_time - self.start_time)
-                    if not os.path.exists('../data.csv'):
-                        with open('../data.csv', 'w') as f:
-                            f.write('name,dist,time')
-                            f.write('\n{}'.format(data))
-                    else:
-                        with open('../data.csv', 'a') as f:
-                            f.write('\n{}'.format(data))
-                    self.saved = True
+
                 self.num_crashes += 1
                 rospy.loginfo('[*]Saving bumper images')
                 with self.bumper_lock:
