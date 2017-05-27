@@ -37,9 +37,7 @@ class NeuralNet(object):
         self.bridge = cv_bridge.CvBridge()
         self.controller = PS3()
         self.safe = True
-        # rospy.Subscriber('/bumper', Bumper, self.reset)
         rospy.Subscriber('/zed/rgb/image_rect_color', Image, callback=self.predict)
-        # rospy.Subscriber('/joy', Joy, callback=self.toggle_nn)
         rospy.Subscriber('/toggle_nn', Bool, callback=self.is_nn_on)
         rospy.init_node('neural_commander')
         rospy.spin()
