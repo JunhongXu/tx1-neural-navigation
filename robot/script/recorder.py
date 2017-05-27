@@ -170,7 +170,9 @@ class Recorder(object):
         self.depth_twist = data
 
     def save_odom(self, odom):
+        rospy.loginfo(self.human_on)
         if self.human_on or self.depth_on or self.neural_net_on:
+            rospy.loginfo(self.distance_travelled)
             pose = odom.pose.pose
             x = pose.position.x
             distance = abs(x - self.previous_x)
