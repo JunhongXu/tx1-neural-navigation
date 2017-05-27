@@ -121,7 +121,6 @@ class Recorder(object):
 
     def bumper(self, data):
         if data.is_left_pressed or data.is_right_pressed:
-            rospy.loginfo('Saving')
             if not self.saved:
                 rospy.loginfo('[!]Saving recorded data!')
                 self.end_time = time.time()
@@ -158,8 +157,6 @@ class Recorder(object):
             with open('../crashes.csv', 'a') as f:
                 f.write('\n{}'.format(crashes))
 
-
-
         speed = self.train_iter + ',' + ' '.join(str(s) for s in self.speed)
         if not os.path.exists('../speed.csv'):
             with open('../speed.csv', 'w') as f:
@@ -170,14 +167,12 @@ class Recorder(object):
         self.depth_twist = data
 
     def save_odom(self, odom):
-        rospy.loginfo(self.human_on)
-        if self.human_on or self.depth_on or self.neural_net_on:
-            rospy.loginfo(self.distance_travelled)
-            pose = odom.pose.pose
-            x = pose.position.x
-            distance = abs(x - self.previous_x)
-            self.previous_x = x
-            self.distance_travelled += distance
+        rospy.loginfo(self.distance_travelled)
+        pose = odom.pose.pose
+        x = pose.position.x
+        distance = abs(x - self.previous_x)
+        self.previous_x = x
+        self.distance_travelled += distance
 
     def create_folders(self):
         if not os.path.exists(self.SAFETY_RGB_PATH):
