@@ -164,7 +164,6 @@ class Commander(object):
     def send_cmd(self):
         # rospy.loginfo(self.is_avoid)
         if self.neuralnet_mode and self.is_avoid:
-            self.nn_cmd.angular.z += np.random.randn()*0.5
             self.move_pub.publish(self.nn_cmd)
         elif self.depth_mod and self.is_avoid:
             self.move_pub.publish(self.depth_cmd)
