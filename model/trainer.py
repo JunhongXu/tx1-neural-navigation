@@ -6,13 +6,14 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 4
+TRAIN_ITER = 1
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0005
 DISPLAY = False
 NUM_ITERS = 25000
 RANDOMIZE = True
 P = 0.3
+T = 0.5
 
 
 def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):
@@ -72,10 +73,10 @@ def train(sess, model, trainer, safety_trainer, num_iter):
         os.makedirs(summary_save_path)
 
     # load data for primary policy
-    x, y, _, _ = load_data(TRAIN_ITER, display=DISPLAY)
+    x, y, _, _ = load_data(TRAIN_ITER, display=DISPLAY, threshold=T)
 
     # load data for training safety policy
-    safety_x, pi_label, _, _ = load_data(TRAIN_ITER, display=DISPLAY, safety=True)
+    safety_x, pi_label, _, _ = load_data(TRAIN_ITER, display=DISPLAY, threshold=T, safety=True)
 
     # concate dataset
     safety_x = np.concatenate((safety_x, x), axis=0)
@@ -114,6 +115,6 @@ if __name__ == '__main__':
             model.restore(sess, TRAIN_ITER-1)
         sess.run(tf.global_variables_initializer())
         train(sess, model, primary_policy_trainer, safety_policy_trainer, NUM_ITERS)
-        convert_to_pkl(model, sess, TRAIN_ITER)
+        convert_to_pkl(model, sess, TRAIN_ITER, threshold=T)
 
 
