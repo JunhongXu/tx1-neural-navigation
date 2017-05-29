@@ -6,14 +6,14 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 1
+TRAIN_ITER = 4
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0005
 DISPLAY = False
 NUM_ITERS = 25000
 RANDOMIZE = True
 P = 0.3
-T = 0.5
+T = 0.99
 
 
 def train_primary_policy(sess, x, y, writer, model, num_iter, trainer):

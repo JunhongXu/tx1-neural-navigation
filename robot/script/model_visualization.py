@@ -122,7 +122,7 @@ class Visualizer(object):
 
 if __name__ == '__main__':
     try:
-        viz = Visualizer(iteration=3)
+        viz = Visualizer(iteration=4)
     except rospy.ROSInterruptException:
         pass
 
