@@ -6,7 +6,7 @@ from tensorflow.contrib.layers import optimize_loss
 import numpy as np
 
 
-TRAIN_ITER = 3
+TRAIN_ITER = 4
 BATCH_SIZE = 128
 SAFETY_THRESHOLD = 0.0005
 DISPLAY = False

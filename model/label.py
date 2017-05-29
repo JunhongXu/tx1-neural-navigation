@@ -149,5 +149,5 @@ class Label(object):
 
 
 if __name__ == '__main__':
-    label = Label(3)
+    label = Label(4)
     label.change_labels()

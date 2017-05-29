@@ -170,6 +170,7 @@ class Commander(object):
         elif not self.is_avoid:
             self.move_pub.publish(self.bumper_cmd)
         else:
+            self.joycmd.angular += np.random.randn()
             self.move_pub.publish(self.joycmd)
 
 
